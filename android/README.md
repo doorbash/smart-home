@@ -1,1 +1,1 @@
-#SmartHome Android Application
+SmartHome Android Application

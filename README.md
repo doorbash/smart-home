@@ -1,1 +1,1 @@
-#SmartHome client application for multiple platforms
+SmartHome client application for multiple platforms

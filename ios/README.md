@@ -1,1 +1,1 @@
-#SmartHome IOS Application
+SmartHome IOS Application
