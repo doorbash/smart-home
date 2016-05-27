@@ -1,1 +1,1 @@
-SmartHome IOS Application
+<h1>SmartHome IOS Application</h1>
