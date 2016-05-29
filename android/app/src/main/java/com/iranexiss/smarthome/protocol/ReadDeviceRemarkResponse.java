@@ -10,6 +10,7 @@ public class ReadDeviceRemarkResponse extends Command {
     String remark;
 
     public ReadDeviceRemarkResponse(byte[] payload) {
+        this.payload = payload;
         this.operationCode = OPCODE;
         remark = "";
         for(byte b : payload)

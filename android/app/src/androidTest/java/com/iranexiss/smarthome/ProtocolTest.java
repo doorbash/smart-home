@@ -10,12 +10,14 @@ import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.ReadDeviceRemark;
 import com.iranexiss.smarthome.protocol.ReadDeviceRemarkResponse;
+import com.iranexiss.smarthome.protocol.SingleChannelControl;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadFactory;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,9 +31,18 @@ public class ProtocolTest {
     private Context context;
     int counter = 0;
 
+    class A {
+        protected int a = 2;
+    }
+
+    class B extends A {
+        protected int a = 3;
+    }
+
     @Before
     public void setup() {
         context = InstrumentationRegistry.getTargetContext();
+        counter = 0;
     }
 
 
@@ -44,6 +55,15 @@ public class ProtocolTest {
     }
 
     @Test
+    public void testClasses() {
+
+        A a = new B();
+        assertEquals(a.a, 2);
+        B b = new B();
+        assertEquals(b.a, 3);
+    }
+
+    @Test
     public void queryOnlineDeviecs() throws InterruptedException {
         final CountDownLatch signal = new CountDownLatch(1);
         Netctl.init(new Netctl.IEventHandler() {
@@ -52,7 +72,7 @@ public class ProtocolTest {
                 Log.d("ProtocolTest", "new command : " + command);
 
                 if (command instanceof ReadDeviceRemarkResponse) {
-                    Log.d("ProtocolTest","new device found!");
+                    Log.d("ProtocolTest", "new device found!");
                     counter++;
                 }
 
@@ -78,6 +98,57 @@ public class ProtocolTest {
                 }
             }
         }).start();
+        signal.await();
+    }
+
+    @Test
+    public void testLight() throws InterruptedException {
+        final CountDownLatch signal = new CountDownLatch(1);
+        Netctl.init(new Netctl.IEventHandler() {
+            @Override
+            public void onCommand(Command command) {
+                Log.d("ProtocolTest", "new command : " + command);
+            }
+        });
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+
+                Netctl.sendCommand(new SingleChannelControl(9, 100, 0).setTarget(1, 51));
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Netctl.sendCommand(new SingleChannelControl(9, 0, 0).setTarget(1, 51));
+
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Netctl.sendCommand(new SingleChannelControl(9, 100, 0).setTarget(1, 51));
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Netctl.sendCommand(new SingleChannelControl(9, 0, 0).setTarget(1, 51));
+
+
+                assertEquals(true,true);
+                signal.countDown();
+
+            }
+        }).start();
+
         signal.await();
     }
 

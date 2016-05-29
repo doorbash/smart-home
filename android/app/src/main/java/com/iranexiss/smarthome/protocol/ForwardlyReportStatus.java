@@ -12,6 +12,7 @@ public class ForwardlyReportStatus extends Command {
     boolean[] channelsStatus;
 
     public ForwardlyReportStatus(byte[] payload) {
+        this.payload = payload;
         this.operationCode = OPCODE;
 
         numZones = payload[0];
