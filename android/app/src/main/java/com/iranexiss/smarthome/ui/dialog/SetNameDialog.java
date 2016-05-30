@@ -9,6 +9,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.util.Font;
@@ -46,9 +47,15 @@ public class SetNameDialog extends Dialog {
 
             @Override
             public void onClick(View arg0) {
-                dismiss();
-                SetImageDialog dialog = new SetImageDialog(context);
-                dialog.show();
+
+                String nameString = name.getText().toString();
+                if (nameString.length() > 0) {
+                    dismiss();
+                    SetImageDialog dialog = new SetImageDialog(context);
+                    dialog.show();
+                } else {
+                    Toast.makeText(context, "نام را وارد کنید", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

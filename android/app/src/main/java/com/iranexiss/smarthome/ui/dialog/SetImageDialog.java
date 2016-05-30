@@ -2,14 +2,24 @@ package com.iranexiss.smarthome.ui.dialog;
 
 
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.util.Font;
 
@@ -19,6 +29,10 @@ public class SetImageDialog extends Dialog {
     TextView title;
     Button submit;
     LinearLayout image_holder;
+    ImageChooseBroadcast imageChooseBroadcast;
+    ImageView selectedImage;
+    ImageView newImage;
+    String path;
 
     //_____________________________________________________ Constructor ____________________________
     public SetImageDialog(Context context) {
@@ -37,6 +51,8 @@ public class SetImageDialog extends Dialog {
         title = (TextView) findViewById(R.id.title);
         submit = (Button) findViewById(R.id.submit);
         image_holder = (LinearLayout) findViewById(R.id.image_holder);
+        selectedImage = (ImageView) findViewById(R.id.selected_image);
+        newImage = (ImageView) findViewById(R.id.new_image);
 
 
         title.setTypeface(Font.getInstance(context).iranSans);
@@ -46,6 +62,10 @@ public class SetImageDialog extends Dialog {
 
             @Override
             public void onClick(View arg0) {
+                if (path == null) {
+                    Toast.makeText(context, "تصویر را انتخاب کنید", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 dismiss();
             }
         });
@@ -58,5 +78,54 @@ public class SetImageDialog extends Dialog {
                 dialog.show();
             }
         });
+
+        startListeningToImageChooseBroadcasts();
+    }
+
+
+    public void startListeningToImageChooseBroadcasts() {
+        imageChooseBroadcast = new ImageChooseBroadcast();
+        try {
+            LocalBroadcastManager.getInstance(context).
+                    registerReceiver(imageChooseBroadcast, new IntentFilter("image_choose"));
+        } catch (Exception e) {
+        }
+    }
+
+    public void stoplisteningToImageChooseBroadcasts() {
+
+        try {
+            LocalBroadcastManager.getInstance(context).
+                    unregisterReceiver(imageChooseBroadcast);
+        } catch (Exception e) {
+
+        }
+
+    }
+
+
+    public class ImageChooseBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            path = intent.getStringExtra("image_path");
+
+            Log.d("SetImageDialog", "image_path : " + path);
+
+            selectedImage.setVisibility(View.VISIBLE);
+            newImage.setVisibility(View.GONE);
+
+            Glide
+                    .with(context)
+                    .load(path)
+                    .centerCrop()
+                    .crossFade()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .into(selectedImage);
+        }
+    }
+
+    @Override
+    public void setOnDismissListener(OnDismissListener listener) {
+        stoplisteningToImageChooseBroadcasts();
     }
 }

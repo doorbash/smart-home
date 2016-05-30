@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/take_picture_holder"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@drawable/dialog_button"
@@ -39,6 +40,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/pick_image_holder"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@drawable/dialog_button"
