@@ -13,15 +13,14 @@ import android.widget.TextView;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.util.Font;
 
-public class SetNameDialog extends Dialog {
+public class PickImageDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
     Context context;
-    EditText name;
-    TextView title;
-    Button submit;
+    TextView takeImage;
+    TextView pickImage;
 
     //_____________________________________________________ Constructor ____________________________
-    public SetNameDialog(Context context) {
+    public PickImageDialog(Context context) {
         super(context);
         this.context = context;
     }
@@ -31,25 +30,13 @@ public class SetNameDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_input_name);
+        setContentView(R.layout.dialog_pick_image);
 
+        takeImage = (TextView) findViewById(R.id.take_image);
+        pickImage = (TextView) findViewById(R.id.pick_image);
 
-        title = (TextView) findViewById(R.id.title);
-        name = (EditText) findViewById(R.id.name);
-        submit = (Button) findViewById(R.id.submit);
+        takeImage.setTypeface(Font.getInstance(context).iranSans);
+        pickImage.setTypeface(Font.getInstance(context).iranSans);
 
-        title.setTypeface(Font.getInstance(context).iranSans);
-        name.setTypeface(Font.getInstance(context).iranSans);
-        submit.setTypeface(Font.getInstance(context).iranSans);
-
-        submit.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-                dismiss();
-                SetImageDialog dialog = new SetImageDialog(context);
-                dialog.show();
-            }
-        });
     }
 }

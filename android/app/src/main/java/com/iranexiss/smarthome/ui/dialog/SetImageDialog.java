@@ -7,21 +7,21 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.util.Font;
 
-public class SetNameDialog extends Dialog {
+public class SetImageDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
     Context context;
-    EditText name;
     TextView title;
     Button submit;
+    LinearLayout image_holder;
 
     //_____________________________________________________ Constructor ____________________________
-    public SetNameDialog(Context context) {
+    public SetImageDialog(Context context) {
         super(context);
         this.context = context;
     }
@@ -31,15 +31,15 @@ public class SetNameDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_input_name);
+        setContentView(R.layout.dialog_input_image);
 
 
         title = (TextView) findViewById(R.id.title);
-        name = (EditText) findViewById(R.id.name);
         submit = (Button) findViewById(R.id.submit);
+        image_holder = (LinearLayout) findViewById(R.id.image_holder);
+
 
         title.setTypeface(Font.getInstance(context).iranSans);
-        name.setTypeface(Font.getInstance(context).iranSans);
         submit.setTypeface(Font.getInstance(context).iranSans);
 
         submit.setOnClickListener(new View.OnClickListener() {
@@ -47,7 +47,14 @@ public class SetNameDialog extends Dialog {
             @Override
             public void onClick(View arg0) {
                 dismiss();
-                SetImageDialog dialog = new SetImageDialog(context);
+            }
+        });
+
+
+        image_holder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PickImageDialog dialog = new PickImageDialog(context);
                 dialog.show();
             }
         });

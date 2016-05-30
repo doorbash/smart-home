@@ -20,11 +20,10 @@
             android:orientation="vertical">
 
             <TextView
-                android:alpha="0.87"
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="نام مورد نظر خود را وارد کنید:"
+                android:text="تصویر فضا را انتخاب کنید:"
                 android:textColor="#000"
                 android:textSize="22sp" />
 
@@ -32,6 +31,8 @@
         </LinearLayout>
 
         <LinearLayout
+            android:clickable="true"
+            android:id="@+id/image_holder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="16dp"
@@ -39,14 +40,20 @@
             android:orientation="vertical">
 
 
-            <EditText
-                android:id="@+id/name"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="نام فضا"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/md_grey_700"
-                android:textSize="17sp" />
+                android:layout_height="150dp"
+                android:background="@color/md_grey_50">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:alpha="0.54"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_add_a_photo_black_48dp" />
+
+            </RelativeLayout>
 
 
         </LinearLayout>
@@ -61,13 +68,13 @@
 
 
             <Button
-                android:textSize="20sp"
                 android:id="@+id/submit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/dialog_button"
                 android:text="اعمال"
-                android:textColor="@color/md_red_800" />
+                android:textColor="@color/md_red_800"
+                android:textSize="20sp" />
         </LinearLayout>
 
 
