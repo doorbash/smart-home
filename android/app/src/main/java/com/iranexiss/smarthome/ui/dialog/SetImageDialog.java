@@ -24,6 +24,7 @@ import com.iranexiss.smarthome.MainActivity;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
+import com.iranexiss.smarthome.util.Random;
 
 public class SetImageDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
@@ -78,6 +79,7 @@ public class SetImageDialog extends Dialog {
                 Room room = new Room();
                 room.setImagePath(path);
                 room.setName(roomName);
+                room.setUuid(Random.generateRand(50));
                 room.insert();
 
                 // refresh MainActiviyty's adapter

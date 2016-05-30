@@ -4,6 +4,7 @@ import com.iranexiss.smarthome.database.AppDatabase;
 import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.annotation.Unique;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
 /**
@@ -12,7 +13,6 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 @Table(database = AppDatabase.class)
 public class Room extends BaseModel {
 
-
     @PrimaryKey(autoincrement = true)
     @Column
     private int id;
@@ -20,6 +20,9 @@ public class Room extends BaseModel {
     private String name;
     @Column
     private String imagePath;
+
+    @Column
+    private String uuid;
 
     public int getId() {
         return id;
@@ -46,4 +49,33 @@ public class Room extends BaseModel {
     }
 
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public boolean swap(Room room) {
+        try {
+            String tempName = room.getName();
+            String tempImagePath = room.getImagePath();
+            String tempUuid = room.getUuid();
+
+            room.setName(getName());
+            room.setImagePath(getImagePath());
+            room.setUuid(getUuid());
+
+            setName(tempName);
+            setImagePath(tempImagePath);
+            setUuid(tempUuid);
+
+            save();
+            room.save();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

@@ -3,19 +3,18 @@ package com.iranexiss.smarthome;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Toast;
 
+import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
@@ -28,7 +27,6 @@ import com.kbeanie.multipicker.api.ImagePicker;
 import com.kbeanie.multipicker.api.Picker;
 import com.kbeanie.multipicker.api.callbacks.ImagePickerCallback;
 import com.kbeanie.multipicker.api.entity.ChosenImage;
-import com.kbeanie.multipicker.core.ImagePickerImpl;
 import com.melnykov.fab.FloatingActionButton;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -43,10 +41,11 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     public static final int RESULT_OK = -1;
 
     private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     boolean lightStatus = false;
     List<Room> rooms;
+    private ItemTouchHelper mItemTouchHelper;
 
     private String pickerPath;
 
@@ -99,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
             });
 
         }
+
+
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
+        mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
 
     }
 

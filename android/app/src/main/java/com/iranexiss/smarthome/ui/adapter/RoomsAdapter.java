@@ -12,11 +12,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
 
 import java.util.List;
 
-public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> {
+public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> implements ItemTouchHelperAdapter {
     private List<Room> rooms;
     private Context context;
 
@@ -79,4 +80,21 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
     public int getItemCount() {
         return rooms.size();
     }
+
+
+    @Override
+    public void onItemDismiss(int position) {
+        rooms.get(position).delete();
+        rooms.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        if (rooms.get(fromPosition).swap(rooms.get(toPosition))) {
+            notifyItemMoved(fromPosition, toPosition);
+        }
+        return true;
+    }
+
 }
