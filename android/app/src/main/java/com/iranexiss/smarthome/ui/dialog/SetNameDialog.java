@@ -51,7 +51,7 @@ public class SetNameDialog extends Dialog {
                 String nameString = name.getText().toString();
                 if (nameString.length() > 0) {
                     dismiss();
-                    SetImageDialog dialog = new SetImageDialog(context);
+                    SetImageDialog dialog = new SetImageDialog(context,nameString);
                     dialog.show();
                 } else {
                     Toast.makeText(context, "نام را وارد کنید", Toast.LENGTH_SHORT).show();

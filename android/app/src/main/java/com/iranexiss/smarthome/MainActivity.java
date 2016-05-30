@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
@@ -29,6 +30,7 @@ import com.kbeanie.multipicker.api.callbacks.ImagePickerCallback;
 import com.kbeanie.multipicker.api.entity.ChosenImage;
 import com.kbeanie.multipicker.core.ImagePickerImpl;
 import com.melnykov.fab.FloatingActionButton;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -44,11 +46,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     boolean lightStatus = false;
-    private ListView lvResults;
-
-    private Button btPickImageSingle;
-    private Button btPickImageMultiple;
-    private Button btTakePicture;
+    List<Room> rooms;
 
     private String pickerPath;
 
@@ -80,9 +78,12 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
         if (mAdapter == null) {
 
-            String[] myDataset = new String[]{"اتاق خواب", "راهرو", "آشپزخانه", "دفتر کار"};
 
-            mAdapter = new RoomsAdapter(this, myDataset);
+            rooms = SQLite.select()
+                    .from(Room.class)
+                    .queryList();
+
+            mAdapter = new RoomsAdapter(this, rooms);
             mRecyclerView.setAdapter(mAdapter);
 
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -233,6 +234,18 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
             }
         }
         super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    public void refreshAdapter(Room room) {
+
+        rooms.add(room);
+
+        if (mAdapter != null) {
+            try {
+                mAdapter.notifyDataSetChanged();
+            } catch (Exception e) {
+            }
+        }
     }
 
 

@@ -20,7 +20,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.iranexiss.smarthome.MainActivity;
 import com.iranexiss.smarthome.R;
+import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
 
 public class SetImageDialog extends Dialog {
@@ -33,11 +35,13 @@ public class SetImageDialog extends Dialog {
     ImageView selectedImage;
     ImageView newImage;
     String path;
+    String roomName;
 
     //_____________________________________________________ Constructor ____________________________
-    public SetImageDialog(Context context) {
+    public SetImageDialog(Context context, String roomName) {
         super(context);
         this.context = context;
+        this.roomName = roomName;
     }
 
     //_____________________________________________________ onCreate Function ______________________
@@ -67,6 +71,19 @@ public class SetImageDialog extends Dialog {
                     return;
                 }
                 dismiss();
+
+
+                // Add room to database
+
+                Room room = new Room();
+                room.setImagePath(path);
+                room.setName(roomName);
+                room.insert();
+
+                // refresh MainActiviyty's adapter
+
+                ((MainActivity) context).refreshAdapter(room);
+
             }
         });
 

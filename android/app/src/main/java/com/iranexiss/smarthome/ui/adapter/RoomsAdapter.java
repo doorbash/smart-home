@@ -11,10 +11,13 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.R;
+import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
 
+import java.util.List;
+
 public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> {
-    private String[] mDataset;
+    private List<Room> rooms;
     private Context context;
 
     // Provide a reference to the views for each data item
@@ -33,8 +36,8 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public RoomsAdapter(Context context, String[] myDataset) {
-        mDataset = myDataset;
+    public RoomsAdapter(Context context, List<Room> rooms) {
+        this.rooms = rooms;
         this.context = context;
     }
 
@@ -56,65 +59,24 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.name.setText(mDataset[position]);
+        holder.name.setText(rooms.get(position).getName());
 
         holder.name.setTypeface(Font.getInstance(context).iranSansBold);
 
-        switch (position) {
-            case 0:
-
-                Glide
-                        .with(context)
-                        .load("http://efdreams.com/data_images/dreams/bedroom/bedroom-06.jpg")
-                        .centerCrop()
-                        .crossFade()
-                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                        .into(holder.image);
-
-                break;
-
-            case 1:
-
-                Glide
-                        .with(context)
-                        .load("http://www.johncullenlighting.co.uk/site/wp-content/uploads/2011/10/Hallway-John-Cullen-Lighting.jpg")
-                        .centerCrop()
-                        .crossFade()
-                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                        .into(holder.image);
-
-                break;
-
-            case 2:
-
-                Glide
-                        .with(context)
-                        .load("http://photos1.zillowstatic.com/i_g/IShnhoatrwzcnb0000000000.jpg")
-                        .centerCrop()
-                        .crossFade()
-                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                        .into(holder.image);
-
-                break;
+        Glide
+                .with(context)
+                .load(rooms.get(position).getImagePath())
+                .centerCrop()
+                .crossFade()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .into(holder.image);
 
 
-            case 3:
-
-                Glide
-                        .with(context)
-                        .load("http://wagonerdds.com/wp-content/gallery/office-tour/wagoner-reception-room.jpg")
-                        .centerCrop()
-                        .crossFade()
-                        .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                        .into(holder.image);
-
-                break;
-        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataset.length;
+        return rooms.size();
     }
 }
