@@ -5,6 +5,9 @@
     <color name="colorAccent">#26a69a</color>
 
 
+    <color name="transparent">#00000000</color>
+
+
     <!-- red -->
     <color name="md_red_50">#fde0dc</color>
     <color name="md_red_100">#f9bdbb</color>
