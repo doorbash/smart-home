@@ -12,6 +12,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -22,7 +23,9 @@ import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
+import com.iranexiss.smarthome.ui.dialog.AddLampDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
+import com.iranexiss.smarthome.util.Font;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 public class RoomActivity extends AppCompatActivity {
@@ -35,13 +38,15 @@ public class RoomActivity extends AppCompatActivity {
     boolean stopIdleThread = false;
     boolean pauseIdeThread = false;
     boolean toolbarStatus = true;
+    int roomID;
+    TextView name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
-        int roomID = getIntent().getIntExtra("room", 0);
+        roomID = getIntent().getIntExtra("room", 0);
 
         room = SQLite.select()
                 .from(Room.class)
@@ -50,6 +55,10 @@ public class RoomActivity extends AppCompatActivity {
 
         final ImageView image = (ImageView) findViewById(R.id.image);
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
+        name = (TextView) findViewById(R.id.name);
+
+        name.setTypeface(Font.getInstance(this).iranSansBold);
+        name.setText(room.getName());
 
         Glide
                 .with(this)
@@ -140,12 +149,32 @@ public class RoomActivity extends AppCompatActivity {
     public void popup(View v) {
         pauseIdeThread = true;
         idleTime = INIT_IDLE_TIME;
-        RoomPopup roomPopup = new RoomPopup(this, v, room,new Runnable() {
+        final RoomPopup roomPopup = new RoomPopup(this, v, room, new Runnable() {
             public void run() {
                 pauseIdeThread = false;
+                room = SQLite.select()
+                        .from(Room.class)
+                        .where(Room_Table.id.is(roomID))
+                        .queryList().get(0);
+                name.setText(room.getName());
             }
         });
         roomPopup.show();
+    }
+
+    public void onLampClicked(View v) {
+        AddLampDialog dialog = new AddLampDialog(RoomActivity.this, new AddLampDialog.CallBack() {
+            @Override
+            public void onSubmited(int subnet, int device, int channel) {
+                Toast.makeText(RoomActivity.this, subnet + " " + device + " " + channel, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCanceled() {
+                Toast.makeText(RoomActivity.this, "canceled", Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
     }
 
     @Override
@@ -197,7 +226,7 @@ public class RoomActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(toolbarStatus) {
+        if (toolbarStatus) {
             toolbarOut(null);
         } else {
             super.onBackPressed();
