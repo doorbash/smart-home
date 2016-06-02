@@ -49,7 +49,7 @@ public class Netctl {
                             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                             Log.d(TAG, "Waiting for data...");
                             serverSocket.receive(receivePacket);
-                            eventHandler.onCommand(Command.input(receivePacket.getData(),receivePacket.getLength()));
+                            eventHandler.onCommand(Command.input(receivePacket.getData(), receivePacket.getLength()));
                         } catch (Exception e) {
 
                         }
@@ -73,6 +73,7 @@ public class Netctl {
         try {
             serverSocket.close();
             serverSocket = null;
+            eventHandler = null;
         } catch (Exception e) {
 
         }

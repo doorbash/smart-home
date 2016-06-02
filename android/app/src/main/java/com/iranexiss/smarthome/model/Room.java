@@ -59,17 +59,11 @@ public class Room extends BaseModel {
 
     public boolean swap(Room room) {
         try {
-            String tempName = room.getName();
-            String tempImagePath = room.getImagePath();
-            String tempUuid = room.getUuid();
+            Room temp = new Room();
 
-            room.setName(getName());
-            room.setImagePath(getImagePath());
-            room.setUuid(getUuid());
-
-            setName(tempName);
-            setImagePath(tempImagePath);
-            setUuid(tempUuid);
+            temp.setFields(room);
+            room.setFields(this);
+            setFields(temp);
 
             save();
             room.save();
@@ -77,5 +71,11 @@ public class Room extends BaseModel {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void setFields(Room room) {
+        setName(room.getName());
+        setImagePath(room.getImagePath());
+        setUuid(room.getUuid());
     }
 }

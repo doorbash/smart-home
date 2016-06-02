@@ -6,6 +6,7 @@
 
 
     <color name="transparent">#00000000</color>
+    <color name="semi_transparent">#40FFFFFF</color>
 
 
     <!-- red -->

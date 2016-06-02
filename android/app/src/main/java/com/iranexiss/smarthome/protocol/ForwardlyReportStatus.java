@@ -9,7 +9,7 @@ public class ForwardlyReportStatus extends Command {
     int numZones;
     int[] zonesStatus;
     int numChannels;
-    boolean[] channelsStatus;
+    public boolean[] channelsStatus;
 
     public ForwardlyReportStatus(byte[] payload) {
         this.payload = payload;

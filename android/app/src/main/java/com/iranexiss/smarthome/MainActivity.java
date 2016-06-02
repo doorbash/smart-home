@@ -14,13 +14,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
-import com.iranexiss.smarthome.protocol.SingleChannelControl;
 import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
 import com.iranexiss.smarthome.ui.dialog.SetNameDialog;
+import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
+import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
 import com.kbeanie.multipicker.api.CacheLocation;
 import com.kbeanie.multipicker.api.CameraImagePicker;
 import com.kbeanie.multipicker.api.ImagePicker;
@@ -43,16 +43,16 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     private RecyclerView mRecyclerView;
     private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    boolean lightStatus = false;
     List<Room> rooms;
     private ItemTouchHelper mItemTouchHelper;
-
     private String pickerPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+
         Netctl.init(new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
@@ -60,9 +60,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
             }
         });
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
 
@@ -104,16 +102,16 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         mItemTouchHelper = new ItemTouchHelper(callback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
 
-    }
+        RecyclerItemClickListener.OnItemClickListener onItemClickListener = new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent i = new Intent(MainActivity.this, RoomActivity.class);
+                i.putExtra("room", rooms.get(position).getId());
+                startActivity(i);
+            }
+        };
 
-
-    public void toggle(View v) {
-        if (lightStatus) {
-            Netctl.sendCommand(new SingleChannelControl(9, 100, 0).setTarget(1, 51));
-        } else {
-            Netctl.sendCommand(new SingleChannelControl(9, 0, 0).setTarget(1, 51));
-        }
-        lightStatus = !lightStatus;
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, onItemClickListener));
     }
 
     @Override
@@ -121,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         Netctl.destroy();
         super.onDestroy();
     }
-
 
     private ImagePicker imagePicker;
 
@@ -240,17 +237,21 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         super.onRestoreInstanceState(savedInstanceState);
     }
 
-    public void refreshAdapter(Room room) {
-
-        rooms.add(room);
+    public void addRoomToList(Room room) {
 
         if (mAdapter != null) {
             try {
-                mAdapter.notifyDataSetChanged();
+                mAdapter.onItemAdded(room);
             } catch (Exception e) {
             }
         }
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mAdapter != null) {
+            mAdapter.reloadAll();
+        }
+    }
 }

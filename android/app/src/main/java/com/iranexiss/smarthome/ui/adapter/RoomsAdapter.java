@@ -14,6 +14,7 @@ import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.List;
 
@@ -72,7 +73,6 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(holder.image);
 
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -97,4 +97,20 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
         return true;
     }
 
+    public void onItemAdded(Room room) {
+        rooms.add(room);
+        notifyItemInserted(rooms.size());
+    }
+
+    public void onItemChanged(int positon, Room room) {
+        rooms.set(positon, room);
+        notifyItemChanged(positon);
+    }
+
+    public void reloadAll() {
+        List<Room> rs = SQLite.select().from(Room.class).queryList();
+        for (int i = 0; i < rooms.size(); i++)
+            rooms.get(i).setFields(rs.get(i));
+        notifyDataSetChanged();
+    }
 }

@@ -4,7 +4,6 @@ package com.iranexiss.smarthome.ui.dialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -84,7 +83,7 @@ public class SetImageDialog extends Dialog {
 
                 // refresh MainActiviyty's adapter
 
-                ((MainActivity) context).refreshAdapter(room);
+                ((MainActivity) context).addRoomToList(room);
 
             }
         });
