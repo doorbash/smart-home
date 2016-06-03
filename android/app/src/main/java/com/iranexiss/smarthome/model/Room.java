@@ -2,10 +2,15 @@ package com.iranexiss.smarthome.model;
 
 import com.iranexiss.smarthome.database.AppDatabase;
 import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.ModelContainer;
+import com.raizlabs.android.dbflow.annotation.OneToMany;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.annotation.Unique;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
+
+import java.util.List;
 
 /**
  * Created by Milad Doorbash on 5/30/16.
@@ -20,9 +25,21 @@ public class Room extends BaseModel {
     private String name;
     @Column
     private String imagePath;
-
     @Column
     private String uuid;
+
+    public List<Element> elements;
+
+    @OneToMany(methods = {OneToMany.Method.ALL}, variableName = "elements")
+    public List<Element> getElements() {
+        if (elements == null || elements.isEmpty()) {
+            elements = SQLite.select()
+                    .from(Element.class)
+                    .where(Element_Table.room_id.eq(id))
+                    .queryList();
+        }
+        return elements;
+    }
 
     public int getId() {
         return id;

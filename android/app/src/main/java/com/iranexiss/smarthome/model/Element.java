@@ -2,6 +2,7 @@ package com.iranexiss.smarthome.model;
 
 import com.iranexiss.smarthome.database.AppDatabase;
 import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.ForeignKey;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.structure.BaseModel;
@@ -11,6 +12,8 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
  */
 @Table(database = AppDatabase.class)
 public class Element extends BaseModel {
+
+    public static final int TYPE_LAMP = 1;
 
     @PrimaryKey(autoincrement = true)
     @Column
@@ -36,6 +39,11 @@ public class Element extends BaseModel {
 
     @Column
     private int type;
+
+    public boolean[] channels = new boolean[32];
+
+    @ForeignKey(tableClass = Room.class)
+    private int room;
 
     public int getX() {
         return x;
@@ -99,5 +107,13 @@ public class Element extends BaseModel {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public int getRoom() {
+        return room;
+    }
+
+    public void setRoom(int room) {
+        this.room = room;
     }
 }

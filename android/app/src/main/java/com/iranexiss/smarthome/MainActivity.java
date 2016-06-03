@@ -53,13 +53,6 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         setContentView(R.layout.activity_main);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
 
-        Netctl.init(new Netctl.IEventHandler() {
-            @Override
-            public void onCommand(Command command) {
-
-            }
-        });
-
         setSupportActionBar(myToolbar);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -116,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
     @Override
     protected void onDestroy() {
-        Netctl.destroy();
         super.onDestroy();
     }
 
@@ -209,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setFixAspectRatio(true)
                 .setAspectRatio(max, min)
+                .setMinCropResultSize(max/2,min/2)
                 .start(this);
     }
 

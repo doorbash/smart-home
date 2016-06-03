@@ -16,10 +16,12 @@
 #   public *;
 #}
 
-
+# Glide
 -keep public class * implements com.bumptech.glide.module.GlideModule
 -keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
   **[] $VALUES;
   public *;
 }
+
+# DB Flow
 -keep class * extends com.raizlabs.android.dbflow.config.DatabaseHolder { *; }
