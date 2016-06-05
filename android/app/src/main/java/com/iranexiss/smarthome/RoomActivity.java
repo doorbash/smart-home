@@ -1,6 +1,7 @@
 package com.iranexiss.smarthome;
 
 import android.content.ClipData;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Handler;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -21,6 +22,10 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.target.Target;
 import com.iranexiss.smarthome.model.Element;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.model.Room_Table;
@@ -39,7 +44,6 @@ import java.util.List;
 
 public class RoomActivity extends AppCompatActivity {
 
-    boolean lightStatus;
     Room room;
     RelativeLayout toolbar;
     public static final long INIT_IDLE_TIME = 7000;
@@ -86,6 +90,12 @@ public class RoomActivity extends AppCompatActivity {
                 .where(Room_Table.id.is(roomID))
                 .queryList().get(0);
 
+        if (room.getImageWidth() < room.getImageHeight()) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
         final ImageView image = (ImageView) findViewById(R.id.image);
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
         name = (TextView) findViewById(R.id.name);
@@ -99,12 +109,34 @@ public class RoomActivity extends AppCompatActivity {
                 .with(this)
                 .load(room.getImagePath())
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .listener(new RequestListener<String, GlideDrawable>() {
+//                    @Override
+//                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+//                        target.getSize(new SizeReadyCallback() {
+//                            @Override
+//                            public void onSizeReady(int width, int height) {
+//                                if(width >= height) {
+//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//                                }
+//                                else {
+//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//                                }
+//                            }
+//                        });
+//                        return true;
+//                    }
+//                })
                 .into(image);
 
         Netctl.init(new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
-                Log.d("FREPORT",command.toString());
+                Log.d("FREPORT", command.toString());
                 if (command instanceof ForwardlyReportStatus) {
                     Log.d("FREPORT", ((ForwardlyReportStatus) command).channelsStatus[8] + "");
                 }

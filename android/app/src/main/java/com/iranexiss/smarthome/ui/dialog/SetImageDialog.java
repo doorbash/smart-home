@@ -19,6 +19,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.iranexiss.smarthome.MainActivity;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
@@ -35,6 +38,8 @@ public class SetImageDialog extends Dialog {
     ImageView selectedImage;
     ImageView newImage;
     String path;
+    int imageWidth;
+    int imageHeight;
     String roomName;
 
     //_____________________________________________________ Constructor ____________________________
@@ -79,6 +84,8 @@ public class SetImageDialog extends Dialog {
                 room.setImagePath(path);
                 room.setName(roomName);
                 room.setUuid(Random.generateRand(50));
+                room.setImageWidth(imageWidth);
+                room.setImageHeight(imageHeight);
                 room.insert();
 
                 // refresh MainActiviyty's adapter
@@ -126,8 +133,13 @@ public class SetImageDialog extends Dialog {
         @Override
         public void onReceive(Context context, Intent intent) {
             path = intent.getStringExtra("image_path");
+            imageWidth = intent.getIntExtra("image_width", 0);
+            imageHeight = intent.getIntExtra("image_height", 0);
 
             Log.d("SetImageDialog", "image_path : " + path);
+
+//            selectedImage.getLayoutParams().height = (int) (selectedImage.getLayoutParams().width * (((float) imageHeight) / imageWidth));
+//            selectedImage.setLayoutParams(selectedImage.getLayoutParams());
 
             selectedImage.setVisibility(View.VISIBLE);
             newImage.setVisibility(View.GONE);
@@ -135,8 +147,8 @@ public class SetImageDialog extends Dialog {
             Glide
                     .with(context)
                     .load(path)
-                    .centerCrop()
                     .crossFade()
+                    .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .into(selectedImage);
         }

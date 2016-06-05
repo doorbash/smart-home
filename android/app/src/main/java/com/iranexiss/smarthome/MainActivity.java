@@ -1,6 +1,7 @@
 package com.iranexiss.smarthome;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -15,8 +16,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.model.Room;
-import com.iranexiss.smarthome.protocol.Command;
-import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
 import com.iranexiss.smarthome.ui.dialog.SetNameDialog;
 import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
@@ -167,9 +166,19 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
                     Uri resultUri = result.getUri();
                     Log.d("ChosenImage", "path : " + resultUri.getPath());
 
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inJustDecodeBounds = true;
+
+                    //Returns null, sizes are in the options variable
+                    BitmapFactory.decodeFile(resultUri.getPath(), options);
+                    int width = options.outWidth;
+                    int height = options.outHeight;
+
 
                     Intent i = new Intent("image_choose");
                     i.putExtra("image_path", resultUri.getPath());
+                    i.putExtra("image_width",width);
+                    i.putExtra("image_height",height);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
 
                 } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
@@ -192,16 +201,16 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         int height = displaymetrics.heightPixels;
         int width = displaymetrics.widthPixels;
-
-        int max = Math.max(width, height);
-        int min = Math.min(width, height);
-
+//
+//        int max = Math.max(width, height);
+//        int min = Math.min(width, height);
 
         CropImage.activity(Uri.fromFile(new File(image.getOriginalPath())))
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setFixAspectRatio(true)
-                .setAspectRatio(max, min)
-                .setMinCropResultSize(max/2,min/2)
+                .setAspectRatio(width, height)
+                .setMinCropResultSize(width / 2, height / 2)
+                .setAutoZoomEnabled(false)
                 .start(this);
     }
 

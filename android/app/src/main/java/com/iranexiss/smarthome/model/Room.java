@@ -27,6 +27,10 @@ public class Room extends BaseModel {
     private String imagePath;
     @Column
     private String uuid;
+    @Column
+    private int imageWidth;
+    @Column
+    private int imageHeight;
 
     public List<Element> elements;
 
@@ -94,5 +98,21 @@ public class Room extends BaseModel {
         setName(room.getName());
         setImagePath(room.getImagePath());
         setUuid(room.getUuid());
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public void setImageWidth(int imageWidth) {
+        this.imageWidth = imageWidth;
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
+    public void setImageHeight(int imageHeight) {
+        this.imageHeight = imageHeight;
     }
 }
