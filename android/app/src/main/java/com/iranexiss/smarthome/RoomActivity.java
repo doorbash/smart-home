@@ -131,7 +131,6 @@ public class RoomActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View v) {
                                 if (uiState == UiState.NORMAL) {
-                                    idleTime = INIT_IDLE_TIME;
                                     toolbarIn();
                                 }
                             }
@@ -234,13 +233,16 @@ public class RoomActivity extends AppCompatActivity {
 
     public void popup(View v) {
 
-        // Don't do anything if toolbar is not showing
-        if(!toolbarIsUp) return;
+        if(!toolbarIsUp) {
+            toolbarIn();
+            return;
+        }
 
         pauseIdeThread = true;
         idleTime = INIT_IDLE_TIME;
         final RoomPopup roomPopup = new RoomPopup(this, v, room, new Runnable() {
             public void run() {
+                idleTime = INIT_IDLE_TIME;
                 pauseIdeThread = false;
                 room = SQLite.select()
                         .from(Room.class)
@@ -253,18 +255,30 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     public void onLampClicked(View v) {
+
+        if(!toolbarIsUp) {
+            toolbarIn();
+            return;
+        }
+
+        pauseIdeThread = true;
+        idleTime = INIT_IDLE_TIME;
+
+
         AddLampDialog dialog = new AddLampDialog(RoomActivity.this, new AddLampDialog.CallBack() {
             @Override
             public void onSubmited(int subnet, int device, int channel) {
                 RoomActivity.this.subnet = subnet;
                 RoomActivity.this.device = device;
                 RoomActivity.this.channel = channel;
+                idleTime = INIT_IDLE_TIME;
                 pauseIdeThread = false;
                 setUiState(UiState.SET_POINT);
             }
 
             @Override
             public void onCanceled() {
+                idleTime = INIT_IDLE_TIME;
                 pauseIdeThread = false;
             }
         });
@@ -284,6 +298,7 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     public void toolbarIn() {
+        idleTime = INIT_IDLE_TIME;
         if (toolbarIsUp) return;
         toolbarIsUp = true;
         TranslateAnimation anim = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, toolbar.getHeight(), Animation.ABSOLUTE, 0);
