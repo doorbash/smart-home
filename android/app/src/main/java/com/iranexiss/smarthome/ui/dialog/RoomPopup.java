@@ -8,6 +8,7 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.R;
+import com.iranexiss.smarthome.RoomActivity;
 import com.iranexiss.smarthome.model.Room;
 
 /**
@@ -27,6 +28,7 @@ public class RoomPopup extends PopupMenu {
         //registering popup with OnMenuItemClickListener
         setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
+
                 switch (item.getItemId()) {
                     case R.id.edit_name:
                         noItemIsSelected = false;

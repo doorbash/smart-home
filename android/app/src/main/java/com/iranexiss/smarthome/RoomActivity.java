@@ -22,10 +22,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.SizeReadyCallback;
-import com.bumptech.glide.request.target.Target;
 import com.iranexiss.smarthome.model.Element;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.model.Room_Table;
@@ -44,28 +40,32 @@ import java.util.List;
 
 public class RoomActivity extends AppCompatActivity {
 
-    Room room;
-    RelativeLayout toolbar;
-    public static final long INIT_IDLE_TIME = 7000;
-    long idleTime = 0;
-    boolean stopIdleThread = false;
-    boolean pauseIdeThread = false;
-    boolean toolbarStatus = true;
-    int roomID;
-    TextView name;
-    UiState uiState = UiState.NORMAL;
-    int subnet;
-    int device;
-    int channel;
-    RelativeLayout roomLayout;
-    View testCircle;
-    ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener();
 
+    Room room; // Room data
+    RelativeLayout toolbar;  // Bottom toolbar
+    public static final long INIT_IDLE_TIME = 7000; // Toolbar show time
+    long idleTime = 0; // Toolbar show timer
+    boolean stopIdleThread = false; // Toolbar thread stop
+    boolean pauseIdeThread = false; // Toolbar thread pause
+    boolean toolbarIsUp = true; // toolbar is up or not
+    int roomID; // room id that passes to this activity
+    TextView name; // Room name (top right corner of screen)
+    UiState uiState = UiState.NORMAL; // UiState (normal, set point..)
+    int subnet; // Subnet id of selected element
+    int device; // Device id of selected element
+    int channel; // Channel id of selected element
+    RelativeLayout roomLayout; // main layout
+    View testCircle; // circle to get Width Height of selected element
+    ElementOnClickListener elementOnClickListener = new ElementOnClickListener();
+    ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener(); // Long click handler for elements
+
+    // Current Ui sate
     private enum UiState {
-        NORMAL,
-        SET_POINT
+        NORMAL, // Normal state
+        SET_POINT // In this state user have to select a point on screen for element's position
     }
 
+    // Setter for uiState
     public void setUiState(UiState state) {
         if (uiState == state) return;
         uiState = state;
@@ -109,28 +109,6 @@ public class RoomActivity extends AppCompatActivity {
                 .with(this)
                 .load(room.getImagePath())
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                .listener(new RequestListener<String, GlideDrawable>() {
-//                    @Override
-//                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                        target.getSize(new SizeReadyCallback() {
-//                            @Override
-//                            public void onSizeReady(int width, int height) {
-//                                if(width >= height) {
-//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//                                }
-//                                else {
-//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//                                }
-//                            }
-//                        });
-//                        return true;
-//                    }
-//                })
                 .into(image);
 
         Netctl.init(new Netctl.IEventHandler() {
@@ -255,6 +233,10 @@ public class RoomActivity extends AppCompatActivity {
 
 
     public void popup(View v) {
+
+        // Don't do anything if toolbar is not showing
+        if(!toolbarIsUp) return;
+
         pauseIdeThread = true;
         idleTime = INIT_IDLE_TIME;
         final RoomPopup roomPopup = new RoomPopup(this, v, room, new Runnable() {
@@ -302,9 +284,8 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     public void toolbarIn() {
-        Log.d("ToolbarStatus", toolbarStatus + "");
-        if (toolbarStatus) return;
-        toolbarStatus = true;
+        if (toolbarIsUp) return;
+        toolbarIsUp = true;
         TranslateAnimation anim = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, toolbar.getHeight(), Animation.ABSOLUTE, 0);
         anim.setDuration(225);
         anim.setFillAfter(true);
@@ -313,8 +294,8 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     public void toolbarOut(final Runnable callback) {
-        if (!toolbarStatus) return;
-        toolbarStatus = false;
+        if (!toolbarIsUp) return;
+        toolbarIsUp = false;
         idleTime = 0;
         TranslateAnimation anim = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, 0, Animation.ABSOLUTE, toolbar.getHeight());
         anim.setDuration(300);
@@ -338,7 +319,7 @@ public class RoomActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (toolbarStatus) {
+        if (toolbarIsUp) {
             toolbarOut(null);
         } else {
             super.onBackPressed();
@@ -375,7 +356,7 @@ public class RoomActivity extends AppCompatActivity {
 
             elementView.setTag(element);
 
-            elementView.setOnClickListener(new ElementOnClickListener());
+            elementView.setOnClickListener(elementOnClickListener);
             elementView.setOnLongClickListener(elementOnLongClickListener);
 
 
@@ -406,7 +387,6 @@ public class RoomActivity extends AppCompatActivity {
 
         @Override
         public boolean onLongClick(View v) {
-            Log.d("DRAG_TEST", "ALRIGHT DRAG STARTED!!!!!");
             ClipData data = ClipData.newPlainText("", "");
             View.DragShadowBuilder shadowBuilder = new ElementDragShadowBuilder(v);
             v.startDrag(data, shadowBuilder, v, 0);
