@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp">
+
+    <RelativeLayout
+        android:id="@+id/viewLCD"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="2.0dip">
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:src="@drawable/bg_air_panel" />
+
+        <LinearLayout
+            android:id="@+id/viewMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="false"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_margin="10dp"
+                android:id="@+id/imgMode0"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/air_mode_auto" />
+
+            <ImageButton
+                android:layout_margin="10dp"
+                android:id="@+id/imgMode1"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/air_mode_cool_sel" />
+
+            <!--<ImageButton-->
+            <!--android:id="@+id/imgMode2"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="10.0dip"-->
+            <!--android:layout_marginRight="10.0dip"-->
+            <!--android:background="@drawable/air_mode_dry" />-->
+
+            <ImageButton
+                android:layout_margin="10dp"
+                android:id="@+id/imgMode3"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/air_mode_fan" />
+
+            <ImageButton
+                android:layout_margin="10dp"
+                android:id="@+id/imgMode4"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/air_mode_heat" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:gravity="bottom"
+            android:layout_marginBottom="5dp"
+            android:orientation="horizontal"
+            android:id="@+id/viewMode1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/imageView2"
+            android:layout_alignParentLeft="true"
+            android:layout_alignRight="@id/imageView2">
+
+            <LinearLayout
+                android:layout_weight="3"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10.0dip"
+                >
+
+                <ImageView
+                    android:id="@+id/imgFan0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/air_fan_sel" />
+
+                <ImageView
+                    android:id="@+id/imgFan1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/air_fan_sel" />
+
+                <ImageView
+                    android:id="@+id/imgFan2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:src="@drawable/air_fan_sel" />
+
+                <TextView
+                    android:id="@+id/txtFanAuto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="4.0dip"
+                    android:text="Auto"
+                    android:textColor="#ffebf387"
+                    android:textSize="9.0sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:paddingRight="20dp"
+                android:gravity="right|bottom"
+                android:orientation="horizontal"
+                android:layout_weight="2"
+                android:layout_width="0px"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txtTemp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="25"
+                    android:textColor="#ff03f0ff"
+                    android:textSize="50sp" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="5.0dip"
+                    android:background="@drawable/air_temp_c"
+                    android:baselineAlignBottom="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtNoLcd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="NO LCD"
+            android:textColor="#ffacb083"
+            android:visibility="gone" />
+
+        <!--<ImageView-->
+        <!--android:id="@+id/imgLeftRight"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/viewMode"-->
+        <!--android:layout_marginLeft="30.0dip"-->
+        <!--android:layout_marginTop="10.0dip"-->
+        <!--android:src="@drawable/air_leftright" />-->
+
+        <!--<ImageView-->
+        <!--android:id="@+id/imgTopDown"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/viewMode"-->
+        <!--android:layout_marginTop="10.0dip"-->
+        <!--android:layout_toRightOf="@id/imgLeftRight"-->
+        <!--android:src="@drawable/air_topdown" />-->
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/viewLCD"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8.0dip"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:background="@drawable/btn_circle1"
+            android:padding="10dp"
+            android:src="@drawable/btn_power"
+            android:tag="33" />
+
+        <ImageButton
+            android:id="@+id/imageButton2"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:background="@drawable/btn_circle1"
+            android:padding="10dp"
+            android:src="@drawable/btn_fan"
+            android:tag="205" />
+
+        <ImageButton
+            android:id="@+id/imageButton3"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:background="@drawable/btn_circle1"
+            android:padding="10dp"
+            android:src="@drawable/btn_mode"
+            android:tag="203" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/linearLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8.0dip">
+
+        <RelativeLayout
+            android:id="@+id/layoutButtons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/imageButton11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_round1"
+                android:src="@drawable/btn_leftright"
+                android:tag="201" />
+
+            <ImageButton
+                android:id="@+id/imageButton12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10.0dip"
+                android:layout_toRightOf="@id/imageButton11"
+                android:background="@drawable/btn_round1"
+                android:src="@drawable/btn_topdn"
+                android:tag="200" />
+
+            <ImageButton
+                android:id="@+id/imageButton13"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/imageButton11"
+                android:layout_marginTop="20.0dip"
+                android:background="@drawable/btn_round1"
+                android:src="@drawable/btn_sleep"
+                android:tag="204" />
+
+            <ImageButton
+                android:id="@+id/imageButton14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/imageButton12"
+                android:layout_alignTop="@id/imageButton13"
+                android:background="@drawable/btn_round1"
+                android:src="@drawable/btn_turbo"
+                android:tag="211" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20.0dip"
+            android:layout_toRightOf="@id/layoutButtons">
+
+            <ImageView
+                android:id="@+id/bgvol"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="false"
+                android:layout_centerVertical="true"
+                android:src="@drawable/bg_temp" />
+
+            <ImageButton
+                android:id="@+id/imageButton16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@id/bgvol"
+                android:layout_alignRight="@id/bgvol"
+                android:layout_alignTop="@id/bgvol"
+                android:background="@drawable/btn_circle2"
+                android:src="@drawable/btn_plus"
+                android:tag="208" />
+
+            <ImageButton
+                android:id="@+id/imageButton17"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/bgvol"
+                android:layout_alignLeft="@id/bgvol"
+                android:background="@drawable/btn_circle2"
+                android:src="@drawable/btn_minus"
+                android:tag="209" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

@@ -30,6 +30,7 @@ import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
 import com.iranexiss.smarthome.ui.dialog.AddLampDialog;
+import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.iranexiss.smarthome.util.Random;
