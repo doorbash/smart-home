@@ -1,10 +1,14 @@
 package com.iranexiss.smarthome;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,14 +16,25 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.ui.adapter.DrawerMenuAdapter;
 import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
+import com.iranexiss.smarthome.ui.customview.DrawerArrowDrawable;
 import com.iranexiss.smarthome.ui.dialog.SetNameDialog;
 import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
 import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
+import com.iranexiss.smarthome.util.Font;
 import com.kbeanie.multipicker.api.CacheLocation;
 import com.kbeanie.multipicker.api.CameraImagePicker;
 import com.kbeanie.multipicker.api.ImagePicker;
@@ -37,6 +52,11 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements ImagePickerCallback {
 
 
+    private DrawerLayout mDrawerLayout;
+//    private ListView mDrawerList;
+    private RelativeLayout homeLayout;
+
+
     public static final int RESULT_OK = -1;
 
     private RecyclerView mRecyclerView;
@@ -45,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     List<Room> rooms;
     private ItemTouchHelper mItemTouchHelper;
     private String pickerPath;
+    private TextView toolbarTitle;
+    private ImageView homeButton;
+    DrawerArrowDrawable DAD_Home;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +77,69 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
 
         setSupportActionBar(myToolbar);
+
+
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+
+        DAD_Home = new DrawerArrowDrawable(getResources(), true);
+
+        DAD_Home.setStrokeColor(Color.WHITE);
+
+        toolbarTitle = (TextView) findViewById(R.id.tv_toolbar_title);
+        homeButton = (ImageView) findViewById(R.id.iv_t_home);
+        homeLayout = (RelativeLayout) findViewById(R.id.rl_t_home);
+
+        homeButton.setImageDrawable(DAD_Home);
+
+        homeLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                    mDrawerLayout.closeDrawer(Gravity.LEFT);
+                } else {
+                    mDrawerLayout.openDrawer(Gravity.LEFT);
+                }
+            }
+        });
+
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                DAD_Home.setParameter(slideOffset);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
+
+        // Set the adapter for the list view
+//        mDrawerList.setAdapter(new DrawerMenuAdapter(this));
+        // Set the list's click listener
+//        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Toast.makeText(MainActivity.this, "Item " + i + " clicked!", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
 
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
 
@@ -177,8 +264,8 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
                     Intent i = new Intent("image_choose");
                     i.putExtra("image_path", resultUri.getPath());
-                    i.putExtra("image_width",width);
-                    i.putExtra("image_height",height);
+                    i.putExtra("image_width", width);
+                    i.putExtra("image_height", height);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(i);
 
                 } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {

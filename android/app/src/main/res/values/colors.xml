@@ -8,6 +8,9 @@
     <color name="transparent">#00000000</color>
     <color name="semi_transparent">#40FFFFFF</color>
 
+    <color name="_2d_transparent">#0000</color>
+    <color name="_2d_semi_white">#1effffff</color>
+
 
     <!-- red -->
     <color name="md_red_50">#fde0dc</color>
