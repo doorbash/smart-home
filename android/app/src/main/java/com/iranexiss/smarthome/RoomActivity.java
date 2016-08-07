@@ -19,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -234,7 +235,7 @@ public class RoomActivity extends AppCompatActivity {
 
     public void popup(View v) {
 
-        if(!toolbarIsUp) {
+        if (!toolbarIsUp) {
             toolbarIn();
             return;
         }
@@ -255,9 +256,9 @@ public class RoomActivity extends AppCompatActivity {
         roomPopup.show();
     }
 
-    public void onLampClicked(View v) {
+    public void onToolClicked(View v) {
 
-        if(!toolbarIsUp) {
+        if (!toolbarIsUp) {
             toolbarIn();
             return;
         }
@@ -265,25 +266,33 @@ public class RoomActivity extends AppCompatActivity {
         pauseIdeThread = true;
         idleTime = INIT_IDLE_TIME;
 
+        switch (v.getId()) {
+            case R.id.tool_lamp:
+                AddLampDialog dialog = new AddLampDialog(RoomActivity.this, new AddLampDialog.CallBack() {
+                    @Override
+                    public void onSubmited(int subnet, int device, int channel) {
+                        RoomActivity.this.subnet = subnet;
+                        RoomActivity.this.device = device;
+                        RoomActivity.this.channel = channel;
+                        idleTime = INIT_IDLE_TIME;
+                        pauseIdeThread = false;
+                        setUiState(UiState.SET_POINT);
+                    }
 
-        AddLampDialog dialog = new AddLampDialog(RoomActivity.this, new AddLampDialog.CallBack() {
-            @Override
-            public void onSubmited(int subnet, int device, int channel) {
-                RoomActivity.this.subnet = subnet;
-                RoomActivity.this.device = device;
-                RoomActivity.this.channel = channel;
-                idleTime = INIT_IDLE_TIME;
-                pauseIdeThread = false;
-                setUiState(UiState.SET_POINT);
-            }
+                    @Override
+                    public void onCanceled() {
+                        idleTime = INIT_IDLE_TIME;
+                        pauseIdeThread = false;
+                    }
+                });
+                dialog.show();
+                break;
+            case R.id.tool_aircond:
+                Toast.makeText(RoomActivity.this, "You clicked on air cond!!!!", Toast.LENGTH_SHORT).show();
+                break;
+        }
 
-            @Override
-            public void onCanceled() {
-                idleTime = INIT_IDLE_TIME;
-                pauseIdeThread = false;
-            }
-        });
-        dialog.show();
+
     }
 
     @Override
