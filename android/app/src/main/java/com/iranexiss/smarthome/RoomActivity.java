@@ -30,6 +30,7 @@ import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
+import com.iranexiss.smarthome.ui.dialog.AddAirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.AddLampDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
@@ -60,6 +61,7 @@ public class RoomActivity extends AppCompatActivity {
     View testCircle; // circle to get Width Height of selected element
     ElementOnClickListener elementOnClickListener = new ElementOnClickListener();
     ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener(); // Long click handler for elements
+    private int selectedElementType; // When user selects a tool and fills the dialog what type of element is gonna be added to screen
 
     // Current Ui sate
     private enum UiState {
@@ -162,7 +164,7 @@ public class RoomActivity extends AppCompatActivity {
                             element.setDeviceID(device);
                             element.setX((int) (event.getX() - testCircle.getWidth() / 2));
                             element.setY((int) (event.getY() - testCircle.getHeight() / 2));
-                            element.setType(Element.TYPE_LAMP);
+                            element.setType(selectedElementType);
                             element.setRoom(room.getId());
 
                             element.insert();
@@ -276,6 +278,7 @@ public class RoomActivity extends AppCompatActivity {
                         RoomActivity.this.channel = channel;
                         idleTime = INIT_IDLE_TIME;
                         pauseIdeThread = false;
+                        selectedElementType = Element.TYPE_LAMP;
                         setUiState(UiState.SET_POINT);
                     }
 
@@ -288,7 +291,25 @@ public class RoomActivity extends AppCompatActivity {
                 dialog.show();
                 break;
             case R.id.tool_aircond:
-                Toast.makeText(RoomActivity.this, "You clicked on air cond!!!!", Toast.LENGTH_SHORT).show();
+                AddAirCondDialog airCondDialog = new AddAirCondDialog(RoomActivity.this, new AddAirCondDialog.CallBack() {
+                    @Override
+                    public void onSubmited(int subnet, int device, int channel) {
+                        RoomActivity.this.subnet = subnet;
+                        RoomActivity.this.device = device;
+                        RoomActivity.this.channel = channel;
+                        idleTime = INIT_IDLE_TIME;
+                        pauseIdeThread = false;
+                        selectedElementType = Element.TYPE_AIRCOND;
+                        setUiState(UiState.SET_POINT);
+                    }
+
+                    @Override
+                    public void onCanceled() {
+                        idleTime = INIT_IDLE_TIME;
+                        pauseIdeThread = false;
+                    }
+                });
+                airCondDialog.show();
                 break;
         }
 
@@ -384,8 +405,18 @@ public class RoomActivity extends AppCompatActivity {
             elementView.setOnClickListener(elementOnClickListener);
             elementView.setOnLongClickListener(elementOnLongClickListener);
 
+            switch(element.getType()) {
+                case Element.TYPE_LAMP:
+                    ((ImageView)elementView).setImageResource(R.drawable.light_off);
+                    break;
+                case Element.TYPE_AIRCOND:
+                    ((ImageView)elementView).setImageResource(R.drawable.ac);
+                    break;
+            }
 
-            roomLayout.addView(elementView, params);
+            elementView.setLayoutParams(params);
+
+            roomLayout.addView(elementView);
         }
     }
 
@@ -395,15 +426,31 @@ public class RoomActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             Element element = (Element) v.getTag();
-            element.channels[element.getChannelNo() - 1] = !element.channels[element.getChannelNo() - 1];
+            switch (element.getType()) {
+                case Element.TYPE_LAMP:
+                    element.channels[element.getChannelNo() - 1] = !element.channels[element.getChannelNo() - 1];
 
 
-            if (element.channels[element.getChannelNo() - 1]) {
-                ((ImageView) v).setImageResource(R.drawable.light_on);
-                Netctl.sendCommand(new SingleChannelControl(element.getChannelNo(), 100, 0).setTarget(element.getSubnetID(), element.getDeviceID()));
-            } else {
-                ((ImageView) v).setImageResource(R.drawable.light_off);
-                Netctl.sendCommand(new SingleChannelControl(element.getChannelNo(), 0, 0).setTarget(element.getSubnetID(), element.getDeviceID()));
+                    if (element.channels[element.getChannelNo() - 1]) {
+                        ((ImageView) v).setImageResource(R.drawable.light_on);
+                        Netctl.sendCommand(new SingleChannelControl(element.getChannelNo(), 100, 0).setTarget(element.getSubnetID(), element.getDeviceID()));
+                    } else {
+                        ((ImageView) v).setImageResource(R.drawable.light_off);
+                        Netctl.sendCommand(new SingleChannelControl(element.getChannelNo(), 0, 0).setTarget(element.getSubnetID(), element.getDeviceID()));
+                    }
+                    break;
+                case Element.TYPE_AIRCOND:
+                    pauseIdeThread = true;
+                    idleTime = INIT_IDLE_TIME;
+                    AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
+                        @Override
+                        public void onCanceled() {
+                            idleTime = INIT_IDLE_TIME;
+                            pauseIdeThread = false;
+                        }
+                    });
+                    dialog.show();
+                    break;
             }
         }
     }

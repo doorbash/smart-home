@@ -14,6 +14,7 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 public class Element extends BaseModel {
 
     public static final int TYPE_LAMP = 1;
+    public static final int TYPE_AIRCOND = 2;
 
     @PrimaryKey(autoincrement = true)
     @Column

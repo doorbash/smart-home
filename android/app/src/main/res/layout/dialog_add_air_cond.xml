@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#ffff">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:id="@+id/ll_set_folder_name_tabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:gravity="right|center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:alpha="0.87"
+                android:text="اضافه کردن تهویه هوا"
+                android:textColor="#000"
+                android:textSize="22sp" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            android:background="#ffff"
+            android:orientation="horizontal">
+
+
+            <EditText
+                android:id="@+id/subnet_id"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="SubnetID"
+                android:inputType="numberDecimal"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#DE000000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/device_id"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="DeviceID"
+                android:inputType="numberDecimal"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#DE000000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/channel_no"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="ChannelNo"
+                android:inputType="numberDecimal"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#DE000000"
+                android:textSize="15sp" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_submit_set_folder_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="16dp"
+            android:gravity="right|center_vertical"
+            android:orientation="vertical">
+
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/dialog_button"
+                android:text="اعمال"
+                android:textColor="@color/md_red_800"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</RelativeLayout>
