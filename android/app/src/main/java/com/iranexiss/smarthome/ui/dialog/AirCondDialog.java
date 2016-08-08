@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,6 +27,8 @@ public class AirCondDialog extends Dialog {
     EditText deviceID;
     EditText channelNo;
     CallBack callback;
+
+    RotateAnimation rotate;
 
     ImageButton autoMode;
     ImageButton coolMode;
@@ -64,8 +69,8 @@ public class AirCondDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.MATCH_PARENT);
+//        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+//                WindowManager.LayoutParams.MATCH_PARENT);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.air_conditioner_remote);
@@ -103,7 +108,7 @@ public class AirCondDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if(!power) return;
+                if (!power) return;
                 if (temp <= 18) return;
                 temp--;
                 updateUi();
@@ -114,7 +119,7 @@ public class AirCondDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if(!power) return;
+                if (!power) return;
                 if (temp >= 30) return;
                 temp++;
                 updateUi();
@@ -125,7 +130,7 @@ public class AirCondDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if(!power) return;
+                if (!power) return;
                 fan++;
                 fan = fan % 4;
                 Log.d("AirCondRemote", "fan = " + fan);
@@ -137,7 +142,7 @@ public class AirCondDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if(!power) return;
+                if (!power) return;
                 mode++;
                 mode = mode % 4;
                 updateUi();
@@ -145,6 +150,17 @@ public class AirCondDialog extends Dialog {
         });
 
         updateUi();
+
+        RotateAnimation rotate = new RotateAnimation(0, 358, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(900);
+        rotate.setInterpolator(new LinearInterpolator());
+        rotate.setRepeatMode(Animation.RESTART);
+        rotate.setRepeatCount(Animation.INFINITE);
+
+        fan0.startAnimation(rotate);
+        fan1.startAnimation(rotate);
+        fan2.startAnimation(rotate);
+
 
         setOnCancelListener(new OnCancelListener() {
             @Override
@@ -167,9 +183,9 @@ public class AirCondDialog extends Dialog {
             coolMode.setVisibility(View.INVISIBLE);
             fanMode.setVisibility(View.INVISIBLE);
             heatMode.setVisibility(View.INVISIBLE);
-            fan0.setVisibility(View.INVISIBLE);
-            fan1.setVisibility(View.INVISIBLE);
-            fan2.setVisibility(View.INVISIBLE);
+            fan0.setAlpha(0.0f);
+            fan1.setAlpha(0.0f);
+            fan2.setAlpha(0.0f);
             fanAuto.setVisibility(View.INVISIBLE);
             tempC.setVisibility(View.INVISIBLE);
             tempTxt.setVisibility(View.INVISIBLE);
@@ -188,27 +204,27 @@ public class AirCondDialog extends Dialog {
         Log.d("AirCondRemote", "fan is " + fan);
         switch (fan) {
             case 0:
-                fan0.setVisibility(View.VISIBLE);
-                fan1.setVisibility(View.VISIBLE);
-                fan2.setVisibility(View.VISIBLE);
+                fan0.setAlpha(1.0f);
+                fan1.setAlpha(1.0f);
+                fan2.setAlpha(1.0f);
                 fanAuto.setVisibility(View.VISIBLE);
                 break;
             case 1:
-                fan0.setVisibility(View.VISIBLE);
-                fan1.setVisibility(View.INVISIBLE);
-                fan2.setVisibility(View.INVISIBLE);
+                fan0.setAlpha(1.0f);
+                fan1.setAlpha(0.0f);
+                fan2.setAlpha(0.0f);
                 fanAuto.setVisibility(View.INVISIBLE);
                 break;
             case 2:
-                fan0.setVisibility(View.VISIBLE);
-                fan1.setVisibility(View.VISIBLE);
-                fan2.setVisibility(View.INVISIBLE);
+                fan0.setAlpha(1.0f);
+                fan1.setAlpha(1.0f);
+                fan2.setAlpha(0.0f);
                 fanAuto.setVisibility(View.INVISIBLE);
                 break;
             case 3:
-                fan0.setVisibility(View.VISIBLE);
-                fan1.setVisibility(View.VISIBLE);
-                fan2.setVisibility(View.VISIBLE);
+                fan0.setAlpha(1.0f);
+                fan1.setAlpha(1.0f);
+                fan2.setAlpha(1.0f);
                 fanAuto.setVisibility(View.INVISIBLE);
                 break;
         }
