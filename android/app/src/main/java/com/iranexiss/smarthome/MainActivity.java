@@ -1,14 +1,12 @@
 package com.iranexiss.smarthome;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,24 +15,18 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.model.Room;
-import com.iranexiss.smarthome.ui.adapter.DrawerMenuAdapter;
 import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
 import com.iranexiss.smarthome.ui.customview.DrawerArrowDrawable;
 import com.iranexiss.smarthome.ui.dialog.SetNameDialog;
 import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
 import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
-import com.iranexiss.smarthome.util.Font;
 import com.kbeanie.multipicker.api.CacheLocation;
 import com.kbeanie.multipicker.api.CameraImagePicker;
 import com.kbeanie.multipicker.api.ImagePicker;
@@ -42,18 +34,22 @@ import com.kbeanie.multipicker.api.Picker;
 import com.kbeanie.multipicker.api.callbacks.ImagePickerCallback;
 import com.kbeanie.multipicker.api.entity.ChosenImage;
 import com.melnykov.fab.FloatingActionButton;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.util.List;
 
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
+import io.realm.Sort;
+
 public class MainActivity extends AppCompatActivity implements ImagePickerCallback {
 
 
     private DrawerLayout mDrawerLayout;
-//    private ListView mDrawerList;
+    //    private ListView mDrawerList;
     private RelativeLayout homeLayout;
 
 
@@ -62,12 +58,13 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     private RecyclerView mRecyclerView;
     private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    List<Room> rooms;
+    RealmResults<Room> rooms;
     private ItemTouchHelper mItemTouchHelper;
     private String pickerPath;
     private TextView toolbarTitle;
     private ImageView homeButton;
     DrawerArrowDrawable DAD_Home;
+//    RealmChangeListener<RealmResults<Room>> roomsChangeListener;
 
 
     @Override
@@ -154,10 +151,21 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
         if (mAdapter == null) {
 
+            Realm realm = Realm.getDefaultInstance();
 
-            rooms = SQLite.select()
-                    .from(Room.class)
-                    .queryList();
+            rooms = realm.where(Room.class).findAllSorted("time", Sort.ASCENDING);
+
+//            roomsChangeListener = new RealmChangeListener<RealmResults<Room>>() {
+//                @Override
+//                public void onChange(RealmResults<Room> element) {
+//                    Log.d("MainActivity", "roomsChangeListener.onChange()");
+//                    if (mAdapter != null) {
+//                        mAdapter.notifyDataSetChanged();
+//                    }
+//                }
+//            };
+//
+//            rooms.addChangeListener(roomsChangeListener);
 
             mAdapter = new RoomsAdapter(this, rooms);
             mRecyclerView.setAdapter(mAdapter);
@@ -185,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
             @Override
             public void onItemClick(View view, int position) {
                 Intent i = new Intent(MainActivity.this, RoomActivity.class);
-                i.putExtra("room", rooms.get(position).getId());
+                i.putExtra("room", rooms.get(position).uuid);
                 startActivity(i);
             }
         };
@@ -195,6 +203,9 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
     @Override
     protected void onDestroy() {
+
+//        rooms.removeChangeListener(roomsChangeListener);
+
         super.onDestroy();
     }
 
@@ -326,21 +337,27 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         super.onRestoreInstanceState(savedInstanceState);
     }
 
-    public void addRoomToList(Room room) {
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            mDrawerLayout.closeDrawer(Gravity.LEFT);
+        } else
+            super.onBackPressed();
+    }
 
-        if (mAdapter != null) {
-            try {
-                mAdapter.onItemAdded(room);
-            } catch (Exception e) {
-            }
-        }
+    public void notifyRoomsUpdated(Room room) {
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mAdapter != null) {
-            mAdapter.reloadAll();
+        try {
+            mAdapter.notifyDataSetChanged();
+        } catch (Exception e){
+
         }
     }
+
+
 }

@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
-
-def dbflow_version = "3.0.1"
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 24
@@ -43,11 +42,6 @@ dependencies {
     compile 'com.kbeanie:multipicker:1.1.0@aar'
     // Cropping selected picture
     compile 'com.theartofdev.edmodo:android-image-cropper:2.1.4'
-    // DB Flow ORM
-    apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
-    // use kapt for kotlin apt
-    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
-    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
 
     compile 'com.android.support:design:24.1.1'
 }

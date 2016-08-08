@@ -19,14 +19,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.iranexiss.smarthome.MainActivity;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
 import com.iranexiss.smarthome.util.Random;
+
+import io.realm.Realm;
 
 public class SetImageDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
@@ -81,16 +80,24 @@ public class SetImageDialog extends Dialog {
                 // Add room to database
 
                 Room room = new Room();
-                room.setImagePath(path);
-                room.setName(roomName);
-                room.setUuid(Random.generateRand(50));
-                room.setImageWidth(imageWidth);
-                room.setImageHeight(imageHeight);
-                room.insert();
+                room.imagePath = path;
+                room.name = roomName;
+                room.uuid = Random.generateRand(50);
+                room.imageWidth = imageWidth;
+                room.imageHeight = imageHeight;
+                room.time = System.currentTimeMillis();
+
+
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                realm.insert(room);
+                realm.commitTransaction();
+                realm.close();
+
 
                 // refresh MainActiviyty's adapter
 
-                ((MainActivity) context).addRoomToList(room);
+                ((MainActivity) context).notifyRoomsUpdated(room);
 
             }
         });

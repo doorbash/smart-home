@@ -16,6 +16,8 @@ import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
 
+import io.realm.Realm;
+
 public class EditNameDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
     Context context;
@@ -49,7 +51,7 @@ public class EditNameDialog extends Dialog {
         name.setTypeface(Font.getInstance(context).iranSans);
         submit.setTypeface(Font.getInstance(context).iranSans);
 
-        name.setText(room.getName());
+        name.setText(room.name);
 
 
         submit.setOnClickListener(new View.OnClickListener() {
@@ -61,8 +63,16 @@ public class EditNameDialog extends Dialog {
                 if (nameString.length() > 0) {
                     dismiss();
 
-                    room.setName(nameString);
-                    room.save();
+                    Realm realm = Realm.getDefaultInstance();
+
+
+
+                    realm.beginTransaction();
+                    room.name = nameString;
+//                    realm.insertOrUpdate(room);
+                    realm.commitTransaction();
+
+                    realm.close();
 
                     Toast.makeText(context, "نام با موفقیت تعیین شد", Toast.LENGTH_SHORT).show();
 

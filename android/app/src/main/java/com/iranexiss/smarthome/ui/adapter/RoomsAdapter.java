@@ -14,9 +14,11 @@ import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> implements ItemTouchHelperAdapter {
     private List<Room> rooms;
@@ -61,13 +63,13 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.name.setText(rooms.get(position).getName());
+        holder.name.setText(rooms.get(position).name);
 
         holder.name.setTypeface(Font.getInstance(context).iranSansBold);
 
         Glide
                 .with(context)
-                .load(rooms.get(position).getImagePath())
+                .load(rooms.get(position).imagePath)
                 .centerCrop()
                 .crossFade()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -84,33 +86,35 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
 
     @Override
     public void onItemDismiss(int position) {
-        rooms.get(position).delete();
-        rooms.remove(position);
+
         notifyItemRemoved(position);
+
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<Room> result = realm.where(Room.class).equalTo("uuid", rooms.get(position).uuid).findAll();
+        realm.beginTransaction();
+        result.deleteFirstFromRealm();
+        realm.commitTransaction();
+        realm.close();
     }
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition) {
-        if (rooms.get(fromPosition).swap(rooms.get(toPosition))) {
-            notifyItemMoved(fromPosition, toPosition);
-        }
+
+        notifyItemMoved(fromPosition, toPosition);
+
+        Realm realm = Realm.getDefaultInstance();
+        Room from = realm.where(Room.class).equalTo("uuid", rooms.get(fromPosition).uuid).findFirst();
+        Room to = realm.where(Room.class).equalTo("uuid", rooms.get(toPosition).uuid).findFirst();
+        realm.beginTransaction();
+        long temp = from.time;
+        from.time = to.time;
+        to.time = temp;
+//        realm.insertOrUpdate(from);
+//        realm.insertOrUpdate(to);
+        realm.commitTransaction();
+        realm.close();
+
         return true;
     }
 
-    public void onItemAdded(Room room) {
-        rooms.add(room);
-        notifyItemInserted(rooms.size());
-    }
-
-    public void onItemChanged(int positon, Room room) {
-        rooms.set(positon, room);
-        notifyItemChanged(positon);
-    }
-
-    public void reloadAll() {
-        List<Room> rs = SQLite.select().from(Room.class).queryList();
-        for (int i = 0; i < rooms.size(); i++)
-            rooms.get(i).setFields(rs.get(i));
-        notifyDataSetChanged();
-    }
 }
