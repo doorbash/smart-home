@@ -46,7 +46,7 @@ public class RoomActivity extends AppCompatActivity {
 
     Room room; // Room data
     RelativeLayout toolbar;  // Bottom toolbar
-    public static final long INIT_IDLE_TIME = 7000; // Toolbar show time
+    public static final long INIT_IDLE_TIME = 10000; // Toolbar show time
     long idleTime = 0; // Toolbar show timer
     boolean stopIdleThread = false; // Toolbar thread stop
     boolean pauseIdeThread = false; // Toolbar thread pause
@@ -258,6 +258,7 @@ public class RoomActivity extends AppCompatActivity {
         roomPopup.show();
     }
 
+    // is called when a tool on toolbar selected
     public void onToolClicked(View v) {
 
         if (!toolbarIsUp) {
@@ -310,6 +311,15 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 });
                 airCondDialog.show();
+                break;
+            case R.id.tool_music:
+                Toast.makeText(RoomActivity.this, "You clicked on music!!!", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.tool_edit:
+                Toast.makeText(RoomActivity.this, "You clicked on edit!!!", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.tool_delete:
+                Toast.makeText(RoomActivity.this, "You clicked on delete!!!", Toast.LENGTH_SHORT).show();
                 break;
         }
 
@@ -405,12 +415,12 @@ public class RoomActivity extends AppCompatActivity {
             elementView.setOnClickListener(elementOnClickListener);
             elementView.setOnLongClickListener(elementOnLongClickListener);
 
-            switch(element.getType()) {
+            switch (element.getType()) {
                 case Element.TYPE_LAMP:
-                    ((ImageView)elementView).setImageResource(R.drawable.light_off);
+                    ((ImageView) elementView).setImageResource(R.drawable.light_off);
                     break;
                 case Element.TYPE_AIRCOND:
-                    ((ImageView)elementView).setImageResource(R.drawable.ac);
+                    ((ImageView) elementView).setImageResource(R.drawable.ac);
                     break;
             }
 

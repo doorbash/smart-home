@@ -4,6 +4,7 @@
     android:id="@+id/room_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000"
     tools:context="com.iranexiss.smarthome.RoomActivity">
 
     <include
@@ -49,7 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:alpha="0"
+        android:alpha="1"
         android:background="#000"
         android:padding="5dp">
 
@@ -64,47 +65,79 @@
 
             <ImageView
                 android:id="@+id/tool_lamp"
-                android:padding="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:adjustViewBounds="true"
                 android:background="@null"
                 android:onClick="onToolClicked"
+                android:padding="5dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/light_bulb" />
 
 
             <ImageView
                 android:id="@+id/tool_aircond"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_marginLeft="10dp"
+                android:adjustViewBounds="true"
+                android:background="@null"
+                android:onClick="onToolClicked"
                 android:padding="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                android:src="@drawable/cooler" />
+
+            <ImageView
+                android:id="@+id/tool_music"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
                 android:adjustViewBounds="true"
                 android:background="@null"
                 android:onClick="onToolClicked"
                 android:scaleType="centerCrop"
-                android:src="@drawable/cooler" />
+                android:src="@drawable/quaver" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="40dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:background="@drawable/tools_menu_button"
-            android:clickable="true"
             android:gravity="center"
-            android:onClick="popup"
-            android:orientation="vertical"
-            android:padding="5dp">
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/tool_edit"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:adjustViewBounds="true"
+                android:background="@null"
+                android:onClick="onToolClicked"
+                android:scaleType="centerCrop"
+                android:src="@drawable/edit_pencil" />
+
+            <ImageView
+                android:id="@+id/tool_delete"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
+                android:adjustViewBounds="true"
+                android:background="@null"
+                android:onClick="onToolClicked"
+                android:scaleType="centerCrop"
+                android:src="@drawable/cancel_cross" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
                 android:adjustViewBounds="true"
                 android:background="@color/transparent"
+                android:onClick="popup"
+                android:padding="5dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/tools_menu" />
         </LinearLayout>
