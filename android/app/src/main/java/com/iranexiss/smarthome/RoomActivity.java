@@ -185,7 +185,7 @@ public class RoomActivity extends AppCompatActivity {
                                 onOffLight.y = (int) (event.getY() - testCircle.getHeight() / 2);
 
                                 realm.beginTransaction();
-                                realm.copyFromRealm(onOffLight);
+                                realm.insertOrUpdate(onOffLight);
                                 realm.commitTransaction();
 
                                 realm.close();
@@ -504,6 +504,9 @@ public class RoomActivity extends AppCompatActivity {
             if (v.getTag() instanceof OnOffLight) {
                 OnOffLight element = (OnOffLight) v.getTag();
 
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+
 
                 if (element.status == OnOffLight.STATUS_OFF) {
                     element.status = OnOffLight.STATUS_ON;
@@ -514,6 +517,9 @@ public class RoomActivity extends AppCompatActivity {
                     ((ImageView) v).setImageResource(R.drawable.light_off);
                     Netctl.sendCommand(new SingleChannelControl(element.channelId, 0, 0).setTarget(element.subnetID, element.deviceId));
                 }
+
+                realm.commitTransaction();
+                realm.close();
 
             } else if (v.getTag() instanceof AirConditioner) {
                 pauseIdeThread = true;

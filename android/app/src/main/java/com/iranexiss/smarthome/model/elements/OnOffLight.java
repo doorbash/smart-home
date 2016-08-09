@@ -11,7 +11,9 @@ import io.realm.annotations.Ignore;
  * Created by root on 8/9/16.
  */
 public class OnOffLight extends RealmObject {
+    @Ignore
     public static final int STATUS_OFF = 0;
+    @Ignore
     public static final int STATUS_ON = 1;
 
 
