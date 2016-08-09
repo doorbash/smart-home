@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
 import com.iranexiss.smarthome.ui.customview.DrawerArrowDrawable;
 import com.iranexiss.smarthome.ui.dialog.SetNameDialog;
@@ -34,16 +35,12 @@ import com.kbeanie.multipicker.api.Picker;
 import com.kbeanie.multipicker.api.callbacks.ImagePickerCallback;
 import com.kbeanie.multipicker.api.entity.ChosenImage;
 import com.melnykov.fab.FloatingActionButton;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.util.List;
-
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
-import io.realm.Sort;
 
 public class MainActivity extends AppCompatActivity implements ImagePickerCallback {
 
@@ -58,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     private RecyclerView mRecyclerView;
     private RoomsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    RealmResults<Room> rooms;
+    List<Room> rooms;
     private ItemTouchHelper mItemTouchHelper;
     private String pickerPath;
     private TextView toolbarTitle;
@@ -151,21 +148,8 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
 
         if (mAdapter == null) {
 
-            Realm realm = Realm.getDefaultInstance();
 
-            rooms = realm.where(Room.class).findAllSorted("time", Sort.ASCENDING);
-
-//            roomsChangeListener = new RealmChangeListener<RealmResults<Room>>() {
-//                @Override
-//                public void onChange(RealmResults<Room> element) {
-//                    Log.d("MainActivity", "roomsChangeListener.onChange()");
-//                    if (mAdapter != null) {
-//                        mAdapter.notifyDataSetChanged();
-//                    }
-//                }
-//            };
-//
-//            rooms.addChangeListener(roomsChangeListener);
+            rooms = SQLite.select().from(Room.class).orderBy(Room_Table.time,true).queryList();
 
             mAdapter = new RoomsAdapter(this, rooms);
             mRecyclerView.setAdapter(mAdapter);
@@ -193,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
             @Override
             public void onItemClick(View view, int position) {
                 Intent i = new Intent(MainActivity.this, RoomActivity.class);
-                i.putExtra("room", rooms.get(position).uuid);
+                i.putExtra("room", rooms.get(position).id);
                 startActivity(i);
             }
         };
@@ -346,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     }
 
     public void notifyRoomsUpdated(Room room) {
+        rooms.add(room);
         mAdapter.notifyDataSetChanged();
     }
 

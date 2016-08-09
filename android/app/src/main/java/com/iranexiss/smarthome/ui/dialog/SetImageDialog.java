@@ -25,8 +25,6 @@ import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.util.Font;
 import com.iranexiss.smarthome.util.Random;
 
-import io.realm.Realm;
-
 public class SetImageDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
     Context context;
@@ -88,15 +86,10 @@ public class SetImageDialog extends Dialog {
                 room.time = System.currentTimeMillis();
 
 
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
-                realm.insert(room);
-                realm.commitTransaction();
-                realm.close();
+                room.insert();
 
 
                 // refresh MainActiviyty's adapter
-
                 ((MainActivity) context).notifyRoomsUpdated(room);
 
             }

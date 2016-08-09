@@ -1,18 +1,30 @@
 package com.iranexiss.smarthome.model.elements;
 
+import com.iranexiss.smarthome.model.AppDatabase;
 import com.iranexiss.smarthome.model.Room;
-
-import io.realm.RealmObject;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 /**
  * Created by root on 8/9/16.
  */
-public class AdjustableLight extends RealmObject {
-    public int x;
-    public int y;
-    public int subnetID;
-    public int deviceId;
-    public int channelId;
+@Table(database = AppDatabase.class)
+public class AdjustableLight extends BaseModel {
+    @PrimaryKey(autoincrement = true)
+    public int id;
 
-    public String room;
+    @Column
+    public int x;
+    @Column
+    public int y;
+    @Column
+    public int subnetID;
+    @Column
+    public int deviceId;
+    @Column
+    public int channelId;
+    @Column
+    public int room;
 }

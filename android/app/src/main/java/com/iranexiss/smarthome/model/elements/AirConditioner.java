@@ -1,18 +1,31 @@
 package com.iranexiss.smarthome.model.elements;
 
+import com.iranexiss.smarthome.model.AppDatabase;
 import com.iranexiss.smarthome.model.Room;
-
-import io.realm.RealmObject;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 /**
  * Created by root on 8/9/16.
  */
-public class AirConditioner extends RealmObject {
-    public int x;
-    public int y;
-    public int subnetId;
-    public int deviceId;
-    public int acNo;
+@Table(database = AppDatabase.class)
+public class AirConditioner extends BaseModel {
 
-    public String room;
+    @PrimaryKey(autoincrement = true)
+    public int id;
+
+    @Column
+    public int x;
+    @Column
+    public int y;
+    @Column
+    public int subnetId;
+    @Column
+    public int deviceId;
+    @Column
+    public int acNo;
+    @Column
+    public int room;
 }

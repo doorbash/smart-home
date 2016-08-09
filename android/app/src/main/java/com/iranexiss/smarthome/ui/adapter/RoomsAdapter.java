@@ -15,10 +15,8 @@ import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
 
+import java.util.Collections;
 import java.util.List;
-
-import io.realm.Realm;
-import io.realm.RealmResults;
 
 public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> implements ItemTouchHelperAdapter {
     private List<Room> rooms;
@@ -86,33 +84,27 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
 
     @Override
     public void onItemDismiss(int position) {
-
+        rooms.get(position).delete();
+        rooms.remove(position);
         notifyItemRemoved(position);
-
-        Realm realm = Realm.getDefaultInstance();
-        RealmResults<Room> result = realm.where(Room.class).equalTo("uuid", rooms.get(position).uuid).findAll();
-        realm.beginTransaction();
-        result.deleteFirstFromRealm();
-        realm.commitTransaction();
-        realm.close();
     }
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition) {
 
-        notifyItemMoved(fromPosition, toPosition);
+        Room from = rooms.get(fromPosition);
+        Room to = rooms.get(toPosition);
 
-        Realm realm = Realm.getDefaultInstance();
-        Room from = realm.where(Room.class).equalTo("uuid", rooms.get(fromPosition).uuid).findFirst();
-        Room to = realm.where(Room.class).equalTo("uuid", rooms.get(toPosition).uuid).findFirst();
-        realm.beginTransaction();
         long temp = from.time;
         from.time = to.time;
         to.time = temp;
-//        realm.insertOrUpdate(from);
-//        realm.insertOrUpdate(to);
-        realm.commitTransaction();
-        realm.close();
+
+        from.save();
+        to.save();
+
+        Collections.swap(rooms, fromPosition, toPosition);
+
+        notifyItemMoved(fromPosition, toPosition);
 
         return true;
     }

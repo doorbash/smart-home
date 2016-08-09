@@ -1,29 +1,33 @@
 package com.iranexiss.smarthome.model.elements;
 
-import android.nfc.cardemulation.OffHostApduService;
-
-import com.iranexiss.smarthome.model.Room;
-
-import io.realm.RealmObject;
-import io.realm.annotations.Ignore;
+import com.iranexiss.smarthome.model.AppDatabase;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.ColumnIgnore;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 /**
  * Created by root on 8/9/16.
  */
-public class OnOffLight extends RealmObject {
-    @Ignore
-    public static final int STATUS_OFF = 0;
-    @Ignore
-    public static final int STATUS_ON = 1;
+@Table(database = AppDatabase.class)
+public class OnOffLight extends BaseModel {
 
+    @PrimaryKey(autoincrement = true)
+    public int id;
 
+    @Column
     public int x;
+    @Column
     public int y;
+    @Column
     public int subnetID;
+    @Column
     public int deviceId;
+    @Column
     public int channelId;
-
-    public int status = STATUS_OFF;
-
-    public String room;
+    @Column
+    public boolean status;
+    @Column
+    public int room;
 }

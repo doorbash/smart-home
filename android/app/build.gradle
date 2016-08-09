@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'realm-android'
+
+def dbflow_version = "3.1.1"
 
 android {
     compileSdkVersion 24
@@ -44,4 +45,10 @@ dependencies {
     compile 'com.theartofdev.edmodo:android-image-cropper:2.1.4'
 
     compile 'com.android.support:design:24.1.1'
+
+    // DB Flow
+    apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    // use kapt for kotlin apt
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
 }

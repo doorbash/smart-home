@@ -24,11 +24,15 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.model.elements.AdjustableLight;
 import com.iranexiss.smarthome.model.elements.AirConditioner;
+import com.iranexiss.smarthome.model.elements.AirConditioner_Table;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
+import com.iranexiss.smarthome.model.elements.AudioPlayer_Table;
 import com.iranexiss.smarthome.model.elements.FloorHeat;
 import com.iranexiss.smarthome.model.elements.OnOffLight;
+import com.iranexiss.smarthome.model.elements.OnOffLight_Table;
 import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
@@ -39,11 +43,10 @@ import com.iranexiss.smarthome.ui.dialog.AddLampDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import io.realm.Realm;
+import java.util.List;;
 
 public class RoomActivity extends AppCompatActivity {
 
@@ -55,7 +58,7 @@ public class RoomActivity extends AppCompatActivity {
     boolean stopIdleThread = false; // Toolbar thread stop
     boolean pauseIdeThread = false; // Toolbar thread pause
     boolean toolbarIsUp = true; // toolbar is up or not
-    String roomID; // room id that is passed to this activity
+    int roomId; // room id that is passed to this activity
     TextView name; // Room name (top right corner of screen)
     UiState uiState = UiState.NORMAL; // UiState (normal, set point..)
     RelativeLayout roomLayout; // main layout
@@ -88,13 +91,9 @@ public class RoomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
-        roomID = getIntent().getStringExtra("room");
+        roomId = getIntent().getIntExtra("room", 0);
 
-        Realm realm = Realm.getDefaultInstance();
-
-        room = realm.where(Room.class).equalTo("uuid", roomID).findFirst();
-
-        realm.close();
+        room = SQLite.select().from(Room.class).where(Room_Table.id.is(roomId)).queryList().get(0);
 
         if (room.imageWidth < room.imageHeight) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -162,33 +161,23 @@ public class RoomActivity extends AppCompatActivity {
 
                             } else if (selectedElement instanceof AirConditioner) {
 
-                                Realm realm = Realm.getDefaultInstance();
+
                                 AirConditioner airConditioner = (AirConditioner) selectedElement;
                                 airConditioner.x = (int) (event.getX() - testCircle.getWidth() / 2);
                                 airConditioner.y = (int) (event.getY() - testCircle.getHeight() / 2);
-
-                                realm.beginTransaction();
-                                realm.copyFromRealm(airConditioner);
-                                realm.commitTransaction();
-
-                                realm.close();
+                                airConditioner.save();
 
                             } else if (selectedElement instanceof AudioPlayer) {
 
                             } else if (selectedElement instanceof FloorHeat) {
 
                             } else if (selectedElement instanceof OnOffLight) {
-                                Realm realm = Realm.getDefaultInstance();
 
                                 OnOffLight onOffLight = (OnOffLight) selectedElement;
                                 onOffLight.x = (int) (event.getX() - testCircle.getWidth() / 2);
                                 onOffLight.y = (int) (event.getY() - testCircle.getHeight() / 2);
 
-                                realm.beginTransaction();
-                                realm.insertOrUpdate(onOffLight);
-                                realm.commitTransaction();
-
-                                realm.close();
+                                onOffLight.save();
                             } else if (selectedElement instanceof RGBLight) {
 
                             }
@@ -271,7 +260,7 @@ public class RoomActivity extends AppCompatActivity {
             public void run() {
                 idleTime = INIT_IDLE_TIME;
                 pauseIdeThread = false;
-                name.setText(room.name); // TODO: aya esm khodesh update mishe? baeed midunm
+                name.setText(room.name);
             }
         });
         roomPopup.show();
@@ -297,7 +286,7 @@ public class RoomActivity extends AppCompatActivity {
                         onOffLight.subnetID = subnet;
                         onOffLight.deviceId = device;
                         onOffLight.channelId = channel;
-                        onOffLight.room = roomID;
+                        onOffLight.room = roomId;
                         selectedElement = onOffLight;
                         idleTime = INIT_IDLE_TIME;
                         pauseIdeThread = false;
@@ -320,7 +309,7 @@ public class RoomActivity extends AppCompatActivity {
                         airConditioner.subnetId = subnet;
                         airConditioner.deviceId = device;
                         airConditioner.acNo = acNo;
-                        airConditioner.room = roomID;
+                        airConditioner.room = roomId;
                         selectedElement = airConditioner;
                         idleTime = INIT_IDLE_TIME;
                         pauseIdeThread = false;
@@ -421,9 +410,8 @@ public class RoomActivity extends AppCompatActivity {
             roomLayout.removeView(v);
         }
 
-        Realm realm = Realm.getDefaultInstance();
 
-        List<OnOffLight> onOffLightList = realm.where(OnOffLight.class).equalTo("room", roomID).findAll();
+        List<OnOffLight> onOffLightList = SQLite.select().from(OnOffLight.class).where(OnOffLight_Table.room.is(roomId)).queryList();
         for (OnOffLight element : onOffLightList) {
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -446,7 +434,7 @@ public class RoomActivity extends AppCompatActivity {
             roomLayout.addView(elementView);
         }
 
-        List<AirConditioner> aircondList = realm.where(AirConditioner.class).equalTo("room", roomID).findAll();
+        List<AirConditioner> aircondList = SQLite.select().from(AirConditioner.class).where(AirConditioner_Table.room.is(roomId)).queryList();
         for (AirConditioner element : aircondList) {
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -469,7 +457,7 @@ public class RoomActivity extends AppCompatActivity {
             roomLayout.addView(elementView);
         }
 
-        List<AudioPlayer> audioPlayers = realm.where(AudioPlayer.class).equalTo("room", roomID).findAll();
+        List<AudioPlayer> audioPlayers = SQLite.select().from(AudioPlayer.class).where(AudioPlayer_Table.room.is(roomId)).queryList();
         for (AudioPlayer element : audioPlayers) {
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -491,8 +479,6 @@ public class RoomActivity extends AppCompatActivity {
 
             roomLayout.addView(elementView);
         }
-
-        realm.close();
     }
 
 
@@ -504,22 +490,17 @@ public class RoomActivity extends AppCompatActivity {
             if (v.getTag() instanceof OnOffLight) {
                 OnOffLight element = (OnOffLight) v.getTag();
 
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
 
 
-                if (element.status == OnOffLight.STATUS_OFF) {
-                    element.status = OnOffLight.STATUS_ON;
+                if (!element.status) {
+                    element.status = true;
                     ((ImageView) v).setImageResource(R.drawable.light_on);
                     Netctl.sendCommand(new SingleChannelControl(element.channelId, 100, 0).setTarget(element.subnetID, element.deviceId));
-                } else if (element.status == OnOffLight.STATUS_ON) {
-                    element.status = OnOffLight.STATUS_OFF;
+                } else {
+                    element.status = false;
                     ((ImageView) v).setImageResource(R.drawable.light_off);
                     Netctl.sendCommand(new SingleChannelControl(element.channelId, 0, 0).setTarget(element.subnetID, element.deviceId));
                 }
-
-                realm.commitTransaction();
-                realm.close();
 
             } else if (v.getTag() instanceof AirConditioner) {
                 pauseIdeThread = true;
@@ -567,28 +548,23 @@ public class RoomActivity extends AppCompatActivity {
 
                     View elementView = (View) event.getLocalState();
                     RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) elementView.getLayoutParams();
-                    Realm realm = Realm.getDefaultInstance();
-                    realm.beginTransaction();
 
 
                     if (v.getTag() instanceof OnOffLight) {
                         OnOffLight element = (OnOffLight) v.getTag();
                         element.x = (int) (event.getX() - testCircle.getWidth() / 2);
                         element.y = (int) (event.getY() - testCircle.getHeight() / 2);
-                        realm.insertOrUpdate(element);
+                        element.save();
                         params.leftMargin = element.x;
                         params.topMargin = element.y;
                     } else if (v.getTag() instanceof AirConditioner) {
                         AirConditioner element = (AirConditioner) v.getTag();
                         element.x = (int) (event.getX() - testCircle.getWidth() / 2);
                         element.y = (int) (event.getY() - testCircle.getHeight() / 2);
-                        realm.insertOrUpdate(element);
+                        element.save();
                         params.leftMargin = element.x;
                         params.topMargin = element.y;
                     }
-
-                    realm.commitTransaction();
-                    realm.close();
 
 
                     elementView.setLayoutParams(params);

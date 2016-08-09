@@ -1,11 +1,17 @@
 package com.iranexiss.smarthome.model;
 
-import io.realm.RealmObject;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 /**
  * Created by root on 8/9/16.
  */
-public class Place extends RealmObject{
+@Table(database = AppDatabase.class)
+public class Place extends BaseModel {
+    @PrimaryKey(autoincrement = true)
     public int id;
+    @Column
     public String name;
 }
