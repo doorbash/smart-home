@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#ffff"
+    android:orientation="vertical"
+    android:paddingBottom="20dp"
+    android:paddingTop="20dp"
+    android:paddingRight="20dp"
+    android:paddingLeft="25dp">
+
+    <LinearLayout
+        android:id="@+id/ll_set_folder_name_tabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="3dp"
+        android:layout_marginTop="16dp"
+        android:gravity="right|center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.87"
+            android:text="مطمئن حذف شود؟"
+            android:textColor="#000"
+            android:textSize="22sp" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/ll_submit_set_folder_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:gravity="right|center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/no"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_button"
+            android:text="خیر"
+            android:textColor="@color/md_red_800"
+            android:textSize="20sp" />
+
+
+        <Button
+            android:id="@+id/yes"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dialog_button"
+            android:text="بله"
+            android:textColor="@color/md_red_800"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+
+</LinearLayout>

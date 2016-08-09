@@ -12,8 +12,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.Collections;
 import java.util.List;
@@ -107,6 +109,13 @@ public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.ViewHolder> 
         notifyItemMoved(fromPosition, toPosition);
 
         return true;
+    }
+
+    public void reloadAllRooms() {
+        List<Room> rl = SQLite.select().from(Room.class).orderBy(Room_Table.time,true).queryList();
+        for(int i = 0; i< rl.size();i++) {
+            rooms.get(i).name = rl.get(i).name;
+        }
     }
 
 }

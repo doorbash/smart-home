@@ -21,6 +21,7 @@
         android:scaleType="fitXY" />
 
     <LinearLayout
+        android:id="@+id/name_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -44,13 +45,113 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:visibility="invisible"
+        android:id="@+id/edit_delete_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="5dp"
+        android:layout_toLeftOf="@id/name_layout"
+        android:orientation="horizontal">
+
+
+        <RelativeLayout
+            android:id="@+id/edit_layout"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="15"
+            android:background="@drawable/edit_delete_background">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/edit_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ویرایش"
+                    android:textColor="#FFF"
+                    android:textSize="22sp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="5dp"
+                    android:adjustViewBounds="true"
+                    android:background="@null"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/edit_pencil" />
+
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/delete_layout"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="15"
+            android:background="@drawable/edit_delete_background"
+            android:orientation="horizontal">
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/delete_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="حذف"
+                    android:textColor="#FFF"
+                    android:textSize="22sp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginBottom="15dp"
+                    android:layout_marginLeft="5dp"
+                    android:adjustViewBounds="true"
+                    android:background="@null"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/cancel_cross" />
+
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
 
     <RelativeLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:alpha="1"
+        android:alpha="0"
         android:background="#000"
         android:padding="5dp">
 
@@ -109,35 +210,37 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/tool_edit"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:onClick="onToolClicked"
-                android:scaleType="centerCrop"
-                android:src="@drawable/edit_pencil" />
+            <!--<ImageView-->
+            <!--android:id="@+id/tool_edit"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:adjustViewBounds="true"-->
+            <!--android:background="@null"-->
+            <!--android:onClick="onToolClicked"-->
+            <!--android:scaleType="centerCrop"-->
+            <!--android:src="@drawable/edit_pencil" />-->
 
-            <ImageView
-                android:id="@+id/tool_delete"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="10dp"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:onClick="onToolClicked"
-                android:scaleType="centerCrop"
-                android:src="@drawable/cancel_cross" />
+            <!--<ImageView-->
+            <!--android:id="@+id/tool_delete"-->
+            <!--android:layout_width="30dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_marginLeft="10dp"-->
+            <!--android:adjustViewBounds="true"-->
+            <!--android:background="@null"-->
+            <!--android:onClick="onToolClicked"-->
+            <!--android:scaleType="centerCrop"-->
+            <!--android:src="@drawable/cancel_cross" />-->
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="30dp"
                 android:adjustViewBounds="true"
                 android:background="@color/transparent"
                 android:onClick="popup"
-                android:padding="5dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/tools_menu" />
         </LinearLayout>

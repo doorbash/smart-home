@@ -17,12 +17,14 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.util.Util;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.model.elements.AdjustableLight;
@@ -39,24 +41,28 @@ import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
 import com.iranexiss.smarthome.ui.dialog.AddAirCondDialog;
-import com.iranexiss.smarthome.ui.dialog.AddLampDialog;
+import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
+import com.iranexiss.smarthome.ui.dialog.LightDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
-import java.util.List;;
+import java.util.List;
+;
 
 public class RoomActivity extends AppCompatActivity {
 
 
     Room room; // Room data
     RelativeLayout toolbar;  // Bottom toolbar
-    public static final long INIT_IDLE_TIME = 10000; // Toolbar show time
-    long idleTime = 0; // Toolbar show timer
+    public static final long TIMER_INIT = 10000; // Toolbar show time
+    long timer = 0; // Toolbar show timer
     boolean stopIdleThread = false; // Toolbar thread stop
-    boolean pauseIdeThread = false; // Toolbar thread pause
+    boolean pauseTimer = false; // Toolbar thread pause
     boolean toolbarIsUp = true; // toolbar is up or not
     int roomId; // room id that is passed to this activity
     TextView name; // Room name (top right corner of screen)
@@ -67,10 +73,18 @@ public class RoomActivity extends AppCompatActivity {
     ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener(); // Long click handler for elements
     Object selectedElement;
 
+    LinearLayout editDeleteLayout;
+    RelativeLayout editLayout;
+    RelativeLayout deleteLayout;
+    TextView editText;
+    TextView deleteText;
+
     // Current Ui sate
     private enum UiState {
         NORMAL, // Normal state
-        SET_POINT // In this state user have to select a point on screen for element's position
+        SET_POINT, // In this state user have to select a point on screen for element's position
+        EDIT_MODE, // user will select an element to edit
+        DELETE_MODE // user will select an element to delete
     }
 
     // Setter for uiState
@@ -107,6 +121,15 @@ public class RoomActivity extends AppCompatActivity {
         roomLayout = (RelativeLayout) findViewById(R.id.room_layout);
         testCircle = findViewById(R.id.test_circle);
 
+        editDeleteLayout = (LinearLayout) findViewById(R.id.edit_delete_layout);
+        editLayout = (RelativeLayout) findViewById(R.id.edit_layout);
+        deleteLayout = (RelativeLayout) findViewById(R.id.delete_layout);
+        editText = (TextView) findViewById(R.id.edit_text);
+        deleteText = (TextView) findViewById(R.id.delete_text);
+
+        editText.setTypeface(Font.getInstance(this).iranSansBold);
+        deleteText.setTypeface(Font.getInstance(this).iranSansBold);
+
         name.setTypeface(Font.getInstance(this).iranSansBold);
         name.setText(room.name);
 
@@ -136,7 +159,8 @@ public class RoomActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View v) {
                                 if (uiState == UiState.NORMAL) {
-                                    toolbarIn();
+                                    if (toolbarIsUp) toolbarOut(null);
+                                    else toolbarIn();
                                 }
                             }
                         });
@@ -214,15 +238,15 @@ public class RoomActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    if (idleTime == 0) continue;
+                    if (timer == 0) continue;
 
-                    if (!pauseIdeThread) {
+                    if (!pauseTimer) {
 
-                        Log.d("IdleTime", idleTime + "");
+                        Log.d("IdleTime", timer + "");
 
-                        idleTime -= 1000;
+                        timer -= 1000;
 
-                        if (idleTime == 0) {
+                        if (timer == 0) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -237,6 +261,13 @@ public class RoomActivity extends AppCompatActivity {
         }).start();
 
         showElementsOnScreen();
+
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 
     @Override
@@ -254,12 +285,12 @@ public class RoomActivity extends AppCompatActivity {
             return;
         }
 
-        pauseIdeThread = true;
-        idleTime = INIT_IDLE_TIME;
+        pauseTimer = true;
+        timer = TIMER_INIT;
         final RoomPopup roomPopup = new RoomPopup(this, v, room, new Runnable() {
             public void run() {
-                idleTime = INIT_IDLE_TIME;
-                pauseIdeThread = false;
+                timer = TIMER_INIT;
+                pauseTimer = false;
                 name.setText(room.name);
             }
         });
@@ -274,29 +305,22 @@ public class RoomActivity extends AppCompatActivity {
             return;
         }
 
-        pauseIdeThread = true;
-        idleTime = INIT_IDLE_TIME;
+        pauseTimer = true;
+        timer = TIMER_INIT;
 
         switch (v.getId()) {
             case R.id.tool_lamp:
-                AddLampDialog dialog = new AddLampDialog(RoomActivity.this, new AddLampDialog.CallBack() {
+                LightDialog dialog = new LightDialog(RoomActivity.this, null, room, new LightDialog.CallBack() {
                     @Override
-                    public void onSubmited(int subnet, int device, int channel) {
-                        OnOffLight onOffLight = new OnOffLight();
-                        onOffLight.subnetID = subnet;
-                        onOffLight.deviceId = device;
-                        onOffLight.channelId = channel;
-                        onOffLight.room = roomId;
-                        selectedElement = onOffLight;
-                        idleTime = INIT_IDLE_TIME;
-                        pauseIdeThread = false;
+                    public void onSubmitted(Object light) {
+                        selectedElement = light;
+                        pauseTimer = false;
                         setUiState(UiState.SET_POINT);
                     }
 
                     @Override
                     public void onCanceled() {
-                        idleTime = INIT_IDLE_TIME;
-                        pauseIdeThread = false;
+                        pauseTimer = false;
                     }
                 });
                 dialog.show();
@@ -311,15 +335,13 @@ public class RoomActivity extends AppCompatActivity {
                         airConditioner.acNo = acNo;
                         airConditioner.room = roomId;
                         selectedElement = airConditioner;
-                        idleTime = INIT_IDLE_TIME;
-                        pauseIdeThread = false;
+                        pauseTimer = false;
                         setUiState(UiState.SET_POINT);
                     }
 
                     @Override
                     public void onCanceled() {
-                        idleTime = INIT_IDLE_TIME;
-                        pauseIdeThread = false;
+                        pauseTimer = false;
                     }
                 });
                 airCondDialog.show();
@@ -327,12 +349,12 @@ public class RoomActivity extends AppCompatActivity {
             case R.id.tool_music:
                 Toast.makeText(RoomActivity.this, "You clicked on music!!!", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.tool_edit:
-                Toast.makeText(RoomActivity.this, "You clicked on edit!!!", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.tool_delete:
-                Toast.makeText(RoomActivity.this, "You clicked on delete!!!", Toast.LENGTH_SHORT).show();
-                break;
+//            case R.id.tool_edit:
+//                Toast.makeText(RoomActivity.this, "Select an element to edit.", Toast.LENGTH_LONG).show();
+//                break;
+//            case R.id.tool_delete:
+//                Toast.makeText(RoomActivity.this, "یک المان را برای ", Toast.LENGTH_SHORT).show();
+//                break;
         }
 
 
@@ -341,17 +363,17 @@ public class RoomActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        pauseIdeThread = false;
+        pauseTimer = false;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        pauseIdeThread = true;
+        pauseTimer = true;
     }
 
     public void toolbarIn() {
-        idleTime = INIT_IDLE_TIME;
+        timer = TIMER_INIT;
         if (toolbarIsUp) return;
         toolbarIsUp = true;
         TranslateAnimation anim = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, toolbar.getHeight(), Animation.ABSOLUTE, 0);
@@ -364,7 +386,7 @@ public class RoomActivity extends AppCompatActivity {
     public void toolbarOut(final Runnable callback) {
         if (!toolbarIsUp) return;
         toolbarIsUp = false;
-        idleTime = 0;
+        timer = 0;
         TranslateAnimation anim = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0, Animation.ABSOLUTE, 0, Animation.ABSOLUTE, toolbar.getHeight());
         anim.setDuration(300);
         anim.setFillAfter(true);
@@ -491,7 +513,6 @@ public class RoomActivity extends AppCompatActivity {
                 OnOffLight element = (OnOffLight) v.getTag();
 
 
-
                 if (!element.status) {
                     element.status = true;
                     ((ImageView) v).setImageResource(R.drawable.light_on);
@@ -503,13 +524,13 @@ public class RoomActivity extends AppCompatActivity {
                 }
 
             } else if (v.getTag() instanceof AirConditioner) {
-                pauseIdeThread = true;
-                idleTime = INIT_IDLE_TIME;
+                pauseTimer = true;
+                timer = TIMER_INIT;
                 AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
                     @Override
                     public void onCanceled() {
-                        idleTime = INIT_IDLE_TIME;
-                        pauseIdeThread = false;
+                        timer = TIMER_INIT;
+                        pauseTimer = false;
                     }
                 });
                 dialog.show();
@@ -522,6 +543,7 @@ public class RoomActivity extends AppCompatActivity {
 
         @Override
         public boolean onLongClick(View v) {
+            editDeleteLayout.setVisibility(View.VISIBLE);
             ClipData data = ClipData.newPlainText("", "");
             View.DragShadowBuilder shadowBuilder = new ElementDragShadowBuilder(v);
             v.startDrag(data, shadowBuilder, v, 0);
@@ -535,7 +557,6 @@ public class RoomActivity extends AppCompatActivity {
 
         @Override
         public boolean onDrag(View v, DragEvent event) {
-            int action = event.getAction();
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_STARTED:
                     // do nothing
@@ -546,28 +567,92 @@ public class RoomActivity extends AppCompatActivity {
                     break;
                 case DragEvent.ACTION_DROP:
 
-                    View elementView = (View) event.getLocalState();
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) elementView.getLayoutParams();
+
+                    int elementX = (int) (event.getX());
+                    int elementY = (int) (event.getY());
+
+                    final View elementView = (View) event.getLocalState();
+                    final Object tag = elementView.getTag();
 
 
-                    if (v.getTag() instanceof OnOffLight) {
-                        OnOffLight element = (OnOffLight) v.getTag();
-                        element.x = (int) (event.getX() - testCircle.getWidth() / 2);
-                        element.y = (int) (event.getY() - testCircle.getHeight() / 2);
-                        element.save();
-                        params.leftMargin = element.x;
-                        params.topMargin = element.y;
-                    } else if (v.getTag() instanceof AirConditioner) {
-                        AirConditioner element = (AirConditioner) v.getTag();
-                        element.x = (int) (event.getX() - testCircle.getWidth() / 2);
-                        element.y = (int) (event.getY() - testCircle.getHeight() / 2);
-                        element.save();
-                        params.leftMargin = element.x;
-                        params.topMargin = element.y;
+                    Log.d("Room Activity", elementX + "," + elementY);
+                    Log.d("Room Activity", (editLayout.getX() + editDeleteLayout.getX()) + " - " + editLayout.getWidth() + " ::: " + (editLayout.getY() + editDeleteLayout.getY()) + " - " + editLayout.getHeight());
+                    Log.d("Room Activity", (editLayout.getX() + deleteLayout.getX()) + " - " + deleteLayout.getWidth() + " ::: " + (editLayout.getY() + deleteLayout.getY()) + " - " + deleteLayout.getHeight());
+
+
+                    if (elementX > (editDeleteLayout.getX() + editLayout.getX()) && elementX < (editDeleteLayout.getX() + editLayout.getX() + editLayout.getWidth()) && elementY > (editDeleteLayout.getY() + editLayout.getY()) && elementY < (editDeleteLayout.getY() + editLayout.getY() + editLayout.getHeight())) {
+                        // dropped in edit area
+                        Log.d("Room Activity", "Dropped on Edit Layout");
+
+                        if (tag instanceof OnOffLight) {
+                            LightDialog lightDialog = new LightDialog(RoomActivity.this, tag, room, new LightDialog.CallBack() {
+                                @Override
+                                public void onSubmitted(Object output) {
+                                    // edit finished
+                                    Toast.makeText(RoomActivity.this, "لامپ با موفقیت ویرایش شد.", Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onCanceled() {
+                                    // edit canceled
+                                }
+                            });
+                            lightDialog.show();
+                        } else if (tag instanceof AirConditioner) {
+
+                        }
+
+                    } else if (elementX > (editDeleteLayout.getX() + deleteLayout.getX()) && elementX < (editDeleteLayout.getX() + deleteLayout.getX() + deleteLayout.getWidth()) && elementY > (editDeleteLayout.getY() + deleteLayout.getY()) && elementY < (editDeleteLayout.getY() + deleteLayout.getY() + deleteLayout.getHeight())) {
+                        // dropped in delete area
+                        Log.d("Room Activity", "Dropped on Delete Layout");
+                        DeleteDialog deleteDialog =  new DeleteDialog(RoomActivity.this, new DeleteDialog.CallBack() {
+                            @Override
+                            public void onSubmitted(boolean result) {
+                                if(result) {
+                                    if(tag instanceof OnOffLight) {
+                                        OnOffLight onOffLight = (OnOffLight) tag;
+                                        onOffLight.delete();
+                                    }
+
+                                    showElementsOnScreen();
+                                    Toast.makeText(RoomActivity.this, "با موفقیت حذف شد.", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            }
+
+                            @Override
+                            public void onCanceled() {
+
+                            }
+                        });
+                        deleteDialog.show();
+                    } else if (elementY > toolbar.getY()) {
+                        // dropped in toolbar
+                        Log.d("Room Activity", "Dropped on Toolbar");
+                    } else {
+                        // somewhere else
+                        Log.d("Room Activity", "Dropped somewhere else");
+                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) elementView.getLayoutParams();
+
+                        if (tag instanceof OnOffLight) {
+                            OnOffLight element = (OnOffLight) tag;
+                            element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                            element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                            element.save();
+                            params.leftMargin = element.x;
+                            params.topMargin = element.y;
+                        } else if (tag instanceof AirConditioner) {
+                            AirConditioner element = (AirConditioner) tag;
+                            element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                            element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                            element.save();
+                            params.leftMargin = element.x;
+                            params.topMargin = element.y;
+                        }
+                        elementView.setLayoutParams(params);
                     }
 
-
-                    elementView.setLayoutParams(params);
+                    editDeleteLayout.setVisibility(View.INVISIBLE);
                     elementView.setVisibility(View.VISIBLE);
 
                     break;

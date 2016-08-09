@@ -338,11 +338,13 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
     protected void onResume() {
         super.onResume();
         try {
+            mAdapter.reloadAllRooms();
             mAdapter.notifyDataSetChanged();
         } catch (Exception e){
 
         }
     }
+
 
 
 }
