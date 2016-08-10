@@ -60,7 +60,7 @@ public class LightDialog extends Dialog {
 
         if (input != null) {
             if (input instanceof OnOffLight) {
-                title.setText("ویرایش لامپ");
+                title.setText("ویرایش روشنایی");
                 OnOffLight onOffLight = (OnOffLight) input;
                 subnetID.setText(onOffLight.subnetID + "");
                 deviceID.setText(onOffLight.deviceId + "");

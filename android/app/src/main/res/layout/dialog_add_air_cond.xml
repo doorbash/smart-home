@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.87"
-                android:text="اضافه کردن تهویه هوا"
+                android:text="تهویه هوای جدید"
                 android:textColor="#000"
                 android:textSize="22sp" />
 

@@ -1,7 +1,6 @@
 package com.iranexiss.smarthome;
 
 import android.content.ClipData;
-import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Handler;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -24,7 +23,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.util.Util;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.model.elements.AdjustableLight;
@@ -41,14 +39,14 @@ import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.SingleChannelControl;
 import com.iranexiss.smarthome.ui.dialog.AddAirCondDialog;
+import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
 import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
 import com.iranexiss.smarthome.ui.dialog.LightDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
-
-import org.w3c.dom.Text;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +91,7 @@ public class RoomActivity extends AppCompatActivity {
             case NORMAL:
                 break;
             case SET_POINT:
-                // TODO: Alert user to select a point on screen
+                Toast.makeText(RoomActivity.this, "یک نقطه را روی صفحه انتخاب کنید.", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -186,22 +184,27 @@ public class RoomActivity extends AppCompatActivity {
                             } else if (selectedElement instanceof AirConditioner) {
 
 
-                                AirConditioner airConditioner = (AirConditioner) selectedElement;
-                                airConditioner.x = (int) (event.getX() - testCircle.getWidth() / 2);
-                                airConditioner.y = (int) (event.getY() - testCircle.getHeight() / 2);
-                                airConditioner.save();
+                                AirConditioner element = (AirConditioner) selectedElement;
+                                element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                                element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                                element.save();
 
                             } else if (selectedElement instanceof AudioPlayer) {
+
+                                AudioPlayer element = (AudioPlayer) selectedElement;
+                                element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                                element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                                element.save();
 
                             } else if (selectedElement instanceof FloorHeat) {
 
                             } else if (selectedElement instanceof OnOffLight) {
 
-                                OnOffLight onOffLight = (OnOffLight) selectedElement;
-                                onOffLight.x = (int) (event.getX() - testCircle.getWidth() / 2);
-                                onOffLight.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                                OnOffLight element = (OnOffLight) selectedElement;
+                                element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                                element.y = (int) (event.getY() - testCircle.getHeight() / 2);
 
-                                onOffLight.save();
+                                element.save();
                             } else if (selectedElement instanceof RGBLight) {
 
                             }
@@ -348,7 +351,21 @@ public class RoomActivity extends AppCompatActivity {
                 airCondDialog.show();
                 break;
             case R.id.tool_music:
-                Toast.makeText(RoomActivity.this, "You clicked on music!!!", Toast.LENGTH_SHORT).show();
+                AudioPlayerDialog musicPlayer = new AudioPlayerDialog(RoomActivity.this, null, room, new AudioPlayerDialog.CallBack() {
+
+                    @Override
+                    public void onSubmitted(AudioPlayer output) {
+                        selectedElement = output;
+                        pauseTimer = false;
+                        setUiState(UiState.SET_POINT);
+                    }
+
+                    @Override
+                    public void onCanceled() {
+                        pauseTimer = false;
+                    }
+                });
+                musicPlayer.show();
                 break;
 //            case R.id.tool_edit:
 //                Toast.makeText(RoomActivity.this, "Select an element to edit.", Toast.LENGTH_LONG).show();
@@ -532,7 +549,16 @@ public class RoomActivity extends AppCompatActivity {
                 AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
                     @Override
                     public void onCanceled() {
-                        timer = TIMER_INIT;
+                        pauseTimer = false;
+                    }
+                });
+                dialog.show();
+            } else if(v.getTag() instanceof AudioPlayer) {
+                pauseTimer = true;
+                timer = TIMER_INIT;
+                AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
+                    @Override
+                    public void onCanceled() {
                         pauseTimer = false;
                     }
                 });
@@ -587,22 +613,45 @@ public class RoomActivity extends AppCompatActivity {
                         // dropped in edit area
                         Log.d("Room Activity", "Dropped on Edit Layout");
 
-                        if (tag instanceof OnOffLight) {
-                            LightDialog lightDialog = new LightDialog(RoomActivity.this, tag, room, new LightDialog.CallBack() {
-                                @Override
-                                public void onSubmitted(Object output) {
-                                    // edit finished
-                                    Toast.makeText(RoomActivity.this, "لامپ با موفقیت ویرایش شد.", Toast.LENGTH_SHORT).show();
-                                }
+                        if(tag instanceof BaseModel) {
 
-                                @Override
-                                public void onCanceled() {
-                                    // edit canceled
-                                }
-                            });
-                            lightDialog.show();
-                        } else if (tag instanceof AirConditioner) {
+                            pauseTimer = true;
+                            timer = TIMER_INIT;
 
+                            if (tag instanceof OnOffLight) {
+                                LightDialog dialog = new LightDialog(RoomActivity.this, tag, room, new LightDialog.CallBack() {
+                                    @Override
+                                    public void onSubmitted(Object output) {
+                                        // edit finished
+                                        Toast.makeText(RoomActivity.this, "روشنایی با موفقیت ویرایش شد.", Toast.LENGTH_SHORT).show();
+                                        pauseTimer = false;
+                                    }
+
+                                    @Override
+                                    public void onCanceled() {
+                                        // edit canceled
+                                        pauseTimer = false;
+                                    }
+                                });
+                                dialog.show();
+                            } else if (tag instanceof AirConditioner) {
+
+                            } else if (tag instanceof AudioPlayer) {
+                                AudioPlayer audioPlayer = (AudioPlayer) tag;
+                                AudioPlayerDialog dialog = new AudioPlayerDialog(RoomActivity.this, audioPlayer, room, new AudioPlayerDialog.CallBack() {
+                                    @Override
+                                    public void onSubmitted(AudioPlayer output) {
+                                        Toast.makeText(RoomActivity.this, "پخش کننده صدا با موفقیت ویرایش شد.", Toast.LENGTH_SHORT).show();
+                                        pauseTimer = false;
+                                    }
+
+                                    @Override
+                                    public void onCanceled() {
+                                        pauseTimer = false;
+                                    }
+                                });
+                                dialog.show();
+                            }
                         }
 
                     } else if (elementX > (editDeleteLayout.getX() + deleteLayout.getX()) && elementX < (editDeleteLayout.getX() + deleteLayout.getX() + deleteLayout.getWidth()) && elementY > (editDeleteLayout.getY() + deleteLayout.getY()) && elementY < (editDeleteLayout.getY() + deleteLayout.getY() + deleteLayout.getHeight())) {
@@ -612,9 +661,9 @@ public class RoomActivity extends AppCompatActivity {
                             @Override
                             public void onSubmitted(boolean result) {
                                 if (result) {
-                                    if (tag instanceof OnOffLight) {
-                                        OnOffLight onOffLight = (OnOffLight) tag;
-                                        onOffLight.delete();
+
+                                    if (tag instanceof BaseModel) {
+                                        ((BaseModel) tag).delete();
                                     }
 
                                     showElementsOnScreen();
@@ -646,6 +695,13 @@ public class RoomActivity extends AppCompatActivity {
                             params.topMargin = element.y;
                         } else if (tag instanceof AirConditioner) {
                             AirConditioner element = (AirConditioner) tag;
+                            element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                            element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                            element.save();
+                            params.leftMargin = element.x;
+                            params.topMargin = element.y;
+                        } else if (tag instanceof AudioPlayer) {
+                            AudioPlayer element = (AudioPlayer) tag;
                             element.x = (int) (event.getX() - testCircle.getWidth() / 2);
                             element.y = (int) (event.getY() - testCircle.getHeight() / 2);
                             element.save();

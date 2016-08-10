@@ -2,16 +2,16 @@
 <LinearLayout
     android:background="#ffff"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="10dp">
 
     <LinearLayout
         android:id="@+id/ll_set_folder_name_tabel"
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginRight="16dp"
+        android:layout_marginRight="6dp"
         android:layout_marginTop="16dp"
         android:gravity="right|center_vertical"
         android:orientation="vertical">
@@ -21,10 +21,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:alpha="0.87"
-            android:text="اضافه کردن پخش کننده صدا"
+            android:text="پخش کننده صدای جدید"
             android:textColor="#000"
             android:textSize="22sp" />
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/address_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.87"
+            android:text="آدرس دستگاه"
+            android:textColor="#000"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -83,13 +102,14 @@
 
 
         <TextView
+            android:layout_marginBottom="16dp"
             android:id="@+id/input_source_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:alpha="0.87"
             android:text="مبدا ورودی"
             android:textColor="#000"
-            android:textSize="22sp" />
+            android:textSize="20sp" />
 
         <CheckBox
             android:id="@+id/sd_card"
