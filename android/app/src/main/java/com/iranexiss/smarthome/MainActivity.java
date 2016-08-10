@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements ImagePickerCallba
         RecyclerItemClickListener.OnItemClickListener onItemClickListener = new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
+                Log.d("Room Activity","onItemClick()");
                 Intent i = new Intent(MainActivity.this, RoomActivity.class);
                 i.putExtra("room", rooms.get(position).id);
                 startActivity(i);

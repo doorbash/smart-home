@@ -7,12 +7,17 @@
     android:background="#000"
     tools:context="com.iranexiss.smarthome.RoomActivity">
 
-    <include
+    <LinearLayout
         android:id="@+id/test_circle"
-        layout="@layout/element"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="-200dp" />
+        android:layout_marginLeft="-200dp">
+
+        <include
+            layout="@layout/element"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/image"
@@ -46,7 +51,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="invisible"
         android:id="@+id/edit_delete_layout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -54,7 +58,8 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="5dp"
         android:layout_toLeftOf="@id/name_layout"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="invisible">
 
 
         <RelativeLayout
@@ -82,14 +87,13 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
                     android:layout_marginBottom="15dp"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginTop="15dp"
                     android:adjustViewBounds="true"
                     android:background="@null"
                     android:scaleType="fitXY"
                     android:src="@drawable/edit_pencil" />
-
 
 
             </LinearLayout>
@@ -128,14 +132,13 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
                     android:layout_marginBottom="15dp"
                     android:layout_marginLeft="5dp"
+                    android:layout_marginTop="15dp"
                     android:adjustViewBounds="true"
                     android:background="@null"
                     android:scaleType="fitXY"
                     android:src="@drawable/cancel_cross" />
-
 
 
             </LinearLayout>

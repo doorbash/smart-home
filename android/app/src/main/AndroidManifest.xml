@@ -27,7 +27,7 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".RoomActivity"
-            android:screenOrientation="landscape"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"

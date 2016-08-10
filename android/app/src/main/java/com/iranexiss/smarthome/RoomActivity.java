@@ -82,9 +82,7 @@ public class RoomActivity extends AppCompatActivity {
     // Current Ui sate
     private enum UiState {
         NORMAL, // Normal state
-        SET_POINT, // In this state user have to select a point on screen for element's position
-        EDIT_MODE, // user will select an element to edit
-        DELETE_MODE // user will select an element to delete
+        SET_POINT // In this state user have to select a point on screen for element's position
     }
 
     // Setter for uiState
@@ -105,15 +103,17 @@ public class RoomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
+        Log.d("Room Activity", "onCreate()");
+
         roomId = getIntent().getIntExtra("room", 0);
 
         room = SQLite.select().from(Room.class).where(Room_Table.id.is(roomId)).queryList().get(0);
 
-        if (room.imageWidth < room.imageHeight) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
+//        if (room.imageWidth < room.imageHeight) {
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//        } else {
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//        }
 
         final ImageView image = (ImageView) findViewById(R.id.image);
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
@@ -260,6 +260,7 @@ public class RoomActivity extends AppCompatActivity {
             }
         }).start();
 
+        Log.d("Room Activity", "Caller1");
         showElementsOnScreen();
 
         toolbar.setOnClickListener(new View.OnClickListener() {
@@ -417,6 +418,8 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private void showElementsOnScreen() {
+
+        Log.d("Room Activity", "showElementsOnScreen()");
 
         // Remove all elements from screen
         List<View> removeList = new ArrayList<>();
@@ -605,11 +608,11 @@ public class RoomActivity extends AppCompatActivity {
                     } else if (elementX > (editDeleteLayout.getX() + deleteLayout.getX()) && elementX < (editDeleteLayout.getX() + deleteLayout.getX() + deleteLayout.getWidth()) && elementY > (editDeleteLayout.getY() + deleteLayout.getY()) && elementY < (editDeleteLayout.getY() + deleteLayout.getY() + deleteLayout.getHeight())) {
                         // dropped in delete area
                         Log.d("Room Activity", "Dropped on Delete Layout");
-                        DeleteDialog deleteDialog =  new DeleteDialog(RoomActivity.this, new DeleteDialog.CallBack() {
+                        DeleteDialog deleteDialog = new DeleteDialog(RoomActivity.this, new DeleteDialog.CallBack() {
                             @Override
                             public void onSubmitted(boolean result) {
-                                if(result) {
-                                    if(tag instanceof OnOffLight) {
+                                if (result) {
+                                    if (tag instanceof OnOffLight) {
                                         OnOffLight onOffLight = (OnOffLight) tag;
                                         onOffLight.delete();
                                     }
