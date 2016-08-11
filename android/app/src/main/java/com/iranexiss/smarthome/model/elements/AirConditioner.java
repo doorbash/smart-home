@@ -28,4 +28,15 @@ public class AirConditioner extends BaseModel {
     public int acNo;
     @Column
     public int room;
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((AirConditioner)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

@@ -1,4 +1,6 @@
-package com.iranexiss.smarthome.protocol;
+package com.iranexiss.smarthome.protocol.api;
+
+import com.iranexiss.smarthome.protocol.Command;
 
 /**
  * Created by Milad Doorbash on 5/28/16.

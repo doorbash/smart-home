@@ -25,4 +25,15 @@ public class FloorHeat extends BaseModel {
     public int deviceId;
     @Column
     public int room;
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((FloorHeat)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

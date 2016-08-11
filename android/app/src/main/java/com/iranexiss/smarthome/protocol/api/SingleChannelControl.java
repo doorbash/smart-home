@@ -1,5 +1,6 @@
-package com.iranexiss.smarthome.protocol;
+package com.iranexiss.smarthome.protocol.api;
 
+import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.util.MathUtil;
 
 /**

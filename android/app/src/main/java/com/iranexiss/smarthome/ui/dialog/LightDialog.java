@@ -89,6 +89,7 @@ public class LightDialog extends Dialog {
                             onOffLight.subnetID = sid;
                             onOffLight.deviceId = did;
                             onOffLight.channelId = chNo;
+                            onOffLight.save();
                             callback.onSubmitted(onOffLight);
                         }
                     }

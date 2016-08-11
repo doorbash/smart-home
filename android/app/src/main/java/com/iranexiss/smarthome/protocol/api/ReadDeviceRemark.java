@@ -1,4 +1,6 @@
-package com.iranexiss.smarthome.protocol;
+package com.iranexiss.smarthome.protocol.api;
+
+import com.iranexiss.smarthome.protocol.Command;
 
 import java.util.concurrent.ConcurrentMap;
 

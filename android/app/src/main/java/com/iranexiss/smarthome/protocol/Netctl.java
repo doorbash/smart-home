@@ -22,16 +22,16 @@ public class Netctl {
     private static final int SOCKET_TIMEOUT = 10000;
     public static IEventHandler eventHandler;
     private static DatagramSocket serverSocket;
-    private static boolean stop = false;
+//    private static boolean stop = false;
 
     public static void init(IEventHandler iEventHandler) {
-        if (eventHandler != null) return;
+//        if (eventHandler != null) return;
         eventHandler = iEventHandler;
 
-        if (serverSocket != null) {
-            Log.e(TAG, "Already connected.");
-            return;
-        }
+//        if (serverSocket != null) {
+//            Log.e(TAG, "Already connected.");
+//            return;
+//        }
 
         new Thread(new Runnable() {
             @Override
@@ -43,20 +43,24 @@ public class Netctl {
                     serverSocket.setSoTimeout(SOCKET_TIMEOUT);
 
                     while (true) {
-                        if (stop) return;
+//                        if (stop) return;
                         byte[] receiveData = new byte[1024];
                         try {
                             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                             Log.d(TAG, "Waiting for data...");
                             serverSocket.receive(receivePacket);
-                            eventHandler.onCommand(Command.input(receivePacket.getData(), receivePacket.getLength()));
+                            Command input = Command.input(receivePacket.getData(), receivePacket.getLength());
+                            if (input != null)
+                                eventHandler.onCommand(input);
                         } catch (Exception e) {
-
+                            e.printStackTrace();
+                            Log.e("Netctl", e.getMessage());
                         }
                     }
 
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     Log.d(TAG, e.getMessage());
                 }
                 try {
@@ -72,12 +76,12 @@ public class Netctl {
     public static void destroy() {
         try {
             serverSocket.close();
-            serverSocket = null;
-            eventHandler = null;
         } catch (Exception e) {
 
         }
-        stop = true;
+        serverSocket = null;
+        eventHandler = null;
+//        stop = true;
     }
 
     public static void sendCommand(Command command) {
@@ -98,7 +102,8 @@ public class Netctl {
                     DatagramPacket sendPacket = new DatagramPacket(data, data.length, sockaddr);
                     serverSocket.send(sendPacket);
                 } catch (Exception e) {
-
+                    e.printStackTrace();
+                    Log.e("Netctl", e.getMessage());
                 }
             }
         }).start();

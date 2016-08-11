@@ -1,4 +1,6 @@
-package com.iranexiss.smarthome.protocol;
+package com.iranexiss.smarthome.protocol.api;
+
+import com.iranexiss.smarthome.protocol.Command;
 
 /**
  * Created by Milad Doorbash on 5/28/16.
@@ -22,8 +24,11 @@ public class ForwardlyReportStatus extends Command {
         }
         numChannels = payload[numZones + 1];
         channelsStatus = new boolean[numChannels];
-        for (int i = 0; i < numChannels; i++) {
-            channelsStatus[i] = payload[2 + numZones + i] > 0;
+        int cnt = 0;
+        for (int i = 0; i < numChannels / 8 + 1; i++) {
+            for (int j = 0; j < 8 && cnt < numChannels; j++) {
+                channelsStatus[cnt++] = ((payload[2 + numZones + i] >> j) & 1) == 1;
+            }
         }
     }
 }

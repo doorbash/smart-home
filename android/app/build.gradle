@@ -13,6 +13,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -22,6 +23,7 @@ android {
     }
     productFlavors {
     }
+
 }
 
 dependencies {
@@ -43,12 +45,13 @@ dependencies {
     compile 'com.kbeanie:multipicker:1.1.0@aar'
     // Cropping selected picture
     compile 'com.theartofdev.edmodo:android-image-cropper:2.1.4'
-
     compile 'com.android.support:design:24.1.1'
-
     // DB Flow
     apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
     // use kapt for kotlin apt
-    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
     compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    // SmartTabLayout
+    compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
+    // RippleEffect
+    compile 'com.github.traex.rippleeffect:library:1.3'
 }

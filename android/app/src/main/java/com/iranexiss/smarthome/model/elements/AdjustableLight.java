@@ -27,4 +27,15 @@ public class AdjustableLight extends BaseModel {
     public int channelId;
     @Column
     public int room;
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((AdjustableLight)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

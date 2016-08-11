@@ -46,5 +46,15 @@ public class RGBLight extends BaseModel {
 
     @Column
     public int room;
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((RGBLight) obj).id;
+        } catch (Exception e) {
+
+        }
+        return false;
+    }
 }
 

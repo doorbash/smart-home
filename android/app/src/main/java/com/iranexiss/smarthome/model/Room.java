@@ -29,4 +29,16 @@ public class Room extends BaseModel {
     public String uuid;
     @Column
     public int place;
+
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((Room)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

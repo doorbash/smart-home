@@ -1,5 +1,8 @@
 package com.iranexiss.smarthome.protocol;
 
+import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
+import com.iranexiss.smarthome.protocol.api.ReadDeviceRemarkResponse;
 import com.iranexiss.smarthome.util.MathUtil;
 
 import java.net.InetAddress;
@@ -76,15 +79,15 @@ public class Command {
      * Fields
      ********************/
 
-    protected String ip;
-    protected byte[] startCode = new byte[]{(byte) 0xaa, (byte) 0xaa};
-    protected int subnetID = 0x01;
-    protected int deviceID = 0xfe;
-    protected DeviceType deviceType = DeviceType.ANDROID;
-    protected int operationCode = 0;
-    protected int targetSubnetID = 0xff;
-    protected int targetDeviceID = 0xff;
-    protected byte[] payload;
+    public String ip;
+    public byte[] startCode = new byte[]{(byte) 0xaa, (byte) 0xaa};
+    public int subnetID = 0x01;
+    public int deviceID = 0xfe;
+    public DeviceType deviceType = DeviceType.ANDROID;
+    public int operationCode = 0;
+    public int targetSubnetID = 0xff;
+    public int targetDeviceID = 0xff;
+    public byte[] payload;
 
 
     /********************

@@ -30,4 +30,15 @@ public class OnOffLight extends BaseModel {
     public boolean status;
     @Column
     public int room;
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((OnOffLight)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

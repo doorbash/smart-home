@@ -6,6 +6,8 @@ import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
+import java.io.Serializable;
+
 /**
  * Created by root on 8/9/16.
  */
@@ -33,4 +35,25 @@ public class AudioPlayer extends BaseModel {
     public boolean audio_in;
     @Column
     public int room;
+
+
+    public int getSourceInputCount() {
+        int cnt = 0;
+        if (sdcard) cnt++;
+        if (ftp) cnt++;
+        if (fm) cnt++;
+        if (audio_in) cnt++;
+        return cnt;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((AudioPlayer)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

@@ -14,4 +14,16 @@ public class Place extends BaseModel {
     public int id;
     @Column
     public String name;
+
+
+    @Override
+    public boolean equals(Object obj) {
+        try {
+            return id == ((Place)obj).id;
+        }
+        catch (Exception e){
+
+        }
+        return false;
+    }
 }

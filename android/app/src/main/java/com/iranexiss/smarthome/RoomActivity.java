@@ -35,14 +35,15 @@ import com.iranexiss.smarthome.model.elements.OnOffLight;
 import com.iranexiss.smarthome.model.elements.OnOffLight_Table;
 import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.protocol.Command;
-import com.iranexiss.smarthome.protocol.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
-import com.iranexiss.smarthome.protocol.SingleChannelControl;
-import com.iranexiss.smarthome.ui.dialog.AddAirCondDialog;
+import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
+import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
+import com.iranexiss.smarthome.ui.dialog.AudioPlayerRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
 import com.iranexiss.smarthome.ui.dialog.LightDialog;
-import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
+import com.iranexiss.smarthome.ui.dialog.AirCondRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -54,6 +55,9 @@ import java.util.List;
 
 public class RoomActivity extends AppCompatActivity {
 
+    ArrayList<OnOffLight> lights = new ArrayList<>();
+    ArrayList<AirConditioner> airconds = new ArrayList<>();
+    ArrayList<AudioPlayer> audioPlayers = new ArrayList<>();
 
     Room room; // Room data
     RelativeLayout toolbar;  // Bottom toolbar
@@ -141,9 +145,24 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void onCommand(Command command) {
                 Log.d("FREPORT", command.toString());
+
+
                 if (command instanceof ForwardlyReportStatus) {
-                    Log.d("FREPORT", ((ForwardlyReportStatus) command).channelsStatus[8] + "");
+                    for (OnOffLight light : lights) {
+                        if (light.subnetID == command.subnetID && light.deviceId == command.deviceID) {
+                            light.status = ((ForwardlyReportStatus) command).channelsStatus[light.channelId - 1];
+                        }
+                    }
                 }
+
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUi();
+                    }
+                });
+
             }
         });
 
@@ -274,6 +293,28 @@ public class RoomActivity extends AppCompatActivity {
         });
     }
 
+    private void updateUi() {
+        Log.d("Room Activity", "UpdateUi()");
+
+        for (int i = 0; i < roomLayout.getChildCount(); i++) {
+            View v = roomLayout.getChildAt(i);
+            if (v instanceof ImageButton) {
+
+                Object tag = v.getTag();
+
+                if (tag instanceof OnOffLight) {
+                    OnOffLight element = (OnOffLight) tag;
+                    if (element.status) {
+                        ((ImageButton) v).setImageResource(R.drawable.light_on);
+                    } else {
+                        ((ImageButton) v).setImageResource(R.drawable.light_off);
+                    }
+                }
+
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
         Netctl.destroy();
@@ -330,7 +371,7 @@ public class RoomActivity extends AppCompatActivity {
                 dialog.show();
                 break;
             case R.id.tool_aircond:
-                AddAirCondDialog airCondDialog = new AddAirCondDialog(RoomActivity.this, new AddAirCondDialog.CallBack() {
+                AirCondDialog airCondDialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
                     @Override
                     public void onSubmited(int subnet, int device, int acNo) {
                         AirConditioner airConditioner = new AirConditioner();
@@ -455,6 +496,9 @@ public class RoomActivity extends AppCompatActivity {
 
         List<OnOffLight> onOffLightList = SQLite.select().from(OnOffLight.class).where(OnOffLight_Table.room.is(roomId)).queryList();
         for (OnOffLight element : onOffLightList) {
+
+            if (!lights.contains(element)) lights.add(element);
+
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -478,6 +522,9 @@ public class RoomActivity extends AppCompatActivity {
 
         List<AirConditioner> aircondList = SQLite.select().from(AirConditioner.class).where(AirConditioner_Table.room.is(roomId)).queryList();
         for (AirConditioner element : aircondList) {
+
+            if (!airconds.contains(element)) airconds.add(element);
+
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -501,6 +548,9 @@ public class RoomActivity extends AppCompatActivity {
 
         List<AudioPlayer> audioPlayers = SQLite.select().from(AudioPlayer.class).where(AudioPlayer_Table.room.is(roomId)).queryList();
         for (AudioPlayer element : audioPlayers) {
+
+            if (!audioPlayers.contains(element)) audioPlayers.add(element);
+
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -546,23 +596,24 @@ public class RoomActivity extends AppCompatActivity {
             } else if (v.getTag() instanceof AirConditioner) {
                 pauseTimer = true;
                 timer = TIMER_INIT;
-                AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
+                AirCondRemoteDialog dialog = new AirCondRemoteDialog(RoomActivity.this, new AirCondRemoteDialog.CallBack() {
                     @Override
                     public void onCanceled() {
                         pauseTimer = false;
                     }
                 });
                 dialog.show();
-            } else if(v.getTag() instanceof AudioPlayer) {
+            } else if (v.getTag() instanceof AudioPlayer) {
                 pauseTimer = true;
                 timer = TIMER_INIT;
-                AirCondDialog dialog = new AirCondDialog(RoomActivity.this, new AirCondDialog.CallBack() {
+                AudioPlayerRemoteDialog dialog = AudioPlayerRemoteDialog.newInstance(((AudioPlayer) v.getTag()).id, new AudioPlayerRemoteDialog.CallBack() {
                     @Override
                     public void onCanceled() {
+                        Log.d("Room Activity", "AudioPlayerRemoteDialog.CallBack.onCanceled()");
                         pauseTimer = false;
                     }
                 });
-                dialog.show();
+                dialog.show(getSupportFragmentManager(), "");
             }
 
         }
@@ -613,7 +664,7 @@ public class RoomActivity extends AppCompatActivity {
                         // dropped in edit area
                         Log.d("Room Activity", "Dropped on Edit Layout");
 
-                        if(tag instanceof BaseModel) {
+                        if (tag instanceof BaseModel) {
 
                             pauseTimer = true;
                             timer = TIMER_INIT;
