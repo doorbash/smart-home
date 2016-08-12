@@ -55,6 +55,13 @@ public class Netctl {
                         } catch (Exception e) {
                             e.printStackTrace();
                             Log.e("Netctl", e.getMessage());
+
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException ee) {
+                                e.printStackTrace();
+                            }
+
                         }
                     }
 

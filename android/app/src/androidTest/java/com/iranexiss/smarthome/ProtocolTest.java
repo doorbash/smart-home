@@ -8,6 +8,8 @@ import android.util.Log;
 
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemarkResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
@@ -142,7 +144,45 @@ public class ProtocolTest {
                 Netctl.sendCommand(new SingleChannelControl(9, 0, 0).setTarget(1, 51));
 
 
-                assertEquals(true,true);
+                assertEquals(true, true);
+                signal.countDown();
+
+            }
+        }).start();
+
+        signal.await();
+    }
+
+    @Test
+    public void readChannelStatusTest() throws InterruptedException {
+        final CountDownLatch signal = new CountDownLatch(1);
+        Netctl.init(new Netctl.IEventHandler() {
+            @Override
+            public void onCommand(Command command) {
+                Log.d("ProtocolTest", "new command : " + command);
+
+                if (command instanceof ReadChannelsStatusResponse) {
+                    Log.d("ProtocolTest", "light status : " + (((ReadChannelsStatusResponse) command).channelsStatus[8] > 0));
+                    assertEquals(true, true);
+                    signal.countDown();
+                }
+            }
+        });
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+
+                Netctl.sendCommand(new ReadChannelsStatus().setTarget(1, 51));
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+                assertEquals(true, false);
                 signal.countDown();
 
             }

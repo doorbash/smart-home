@@ -18,7 +18,7 @@ public class SingleChannelControl extends Command {
         this.payload = payload;
         lightChannelNumber = payload[0];
         brightnessLevel = payload[1];
-        runningTime = MathUtil.toInt(payload[3], payload[4]);
+        runningTime = MathUtil.toInt(payload[2], payload[3]);
     }
 
     public SingleChannelControl(int lightChannelNumber, int brightnessLevel, int runningTime) {

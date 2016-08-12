@@ -1,8 +1,11 @@
 package com.iranexiss.smarthome.protocol;
 
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemarkResponse;
+import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
 import com.iranexiss.smarthome.util.MathUtil;
 
 import java.net.InetAddress;
@@ -344,13 +347,28 @@ public class Command {
 
         int opCode = MathUtil.toInt(data[21], data[22]);
 
-        if (opCode == ReadDeviceRemark.OPCODE) {
-            ret = new ReadDeviceRemark();
-        } else if (opCode == ForwardlyReportStatus.OPCODE) {
-            ret = new ForwardlyReportStatus(payload);
-        } else if (opCode == ReadDeviceRemarkResponse.OPCODE) {
-            ret = new ReadDeviceRemarkResponse(payload);
+        switch (opCode) {
+            case ReadDeviceRemark.OPCODE:
+                ret = new ReadDeviceRemark();
+                break;
+            case ForwardlyReportStatus.OPCODE:
+                ret = new ForwardlyReportStatus(payload);
+                break;
+            case ReadDeviceRemarkResponse.OPCODE:
+                ret = new ReadDeviceRemarkResponse(payload);
+                break;
+            case ReadChannelsStatusResponse.OPCODE:
+                ret = new ReadChannelsStatusResponse(payload);
+                break;
+            case ReadChannelsStatus.OPCODE:
+                ret = new ReadChannelsStatus();
+                break;
+            case SingleChannelControl.OPCODE:
+                ret = new SingleChannelControl(payload);
+                break;
         }
+
+
         if (ret != null) {
             ret.ip = ipFromByteArray(data);
             ret.startCode = new byte[]{data[14], data[15]};

@@ -37,6 +37,8 @@ import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
+import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
@@ -51,6 +53,8 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ThreadFactory;
 ;
 
 public class RoomActivity extends AppCompatActivity {
@@ -74,6 +78,7 @@ public class RoomActivity extends AppCompatActivity {
     ElementOnClickListener elementOnClickListener = new ElementOnClickListener();
     ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener(); // Long click handler for elements
     Object selectedElement;
+    Handler handler;
 
     LinearLayout editDeleteLayout;
     RelativeLayout editLayout;
@@ -111,11 +116,7 @@ public class RoomActivity extends AppCompatActivity {
 
         room = SQLite.select().from(Room.class).where(Room_Table.id.is(roomId)).queryList().get(0);
 
-//        if (room.imageWidth < room.imageHeight) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//        } else {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        }
+        handler = new Handler();
 
         final ImageView image = (ImageView) findViewById(R.id.image);
         toolbar = (RelativeLayout) findViewById(R.id.toolbar);
@@ -153,20 +154,36 @@ public class RoomActivity extends AppCompatActivity {
                             light.status = ((ForwardlyReportStatus) command).channelsStatus[light.channelId - 1];
                         }
                     }
+
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateUi();
+                        }
+                    });
+                } else if (command instanceof ReadChannelsStatusResponse) {
+
+                    for (OnOffLight light : lights) {
+                        if (light.subnetID == command.subnetID && light.deviceId == command.deviceID) {
+                            light.status = ((ReadChannelsStatusResponse) command).channelsStatus[light.channelId - 1] > 0;
+                        }
+                    }
+
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateUi();
+                        }
+                    });
                 }
 
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateUi();
-                    }
-                });
 
             }
         });
 
-        new Handler().postDelayed(new Runnable() {
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 toolbarOut(new Runnable() {
@@ -285,6 +302,17 @@ public class RoomActivity extends AppCompatActivity {
         Log.d("Room Activity", "Caller1");
         showElementsOnScreen();
 
+
+        // Read room status
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        }, 1000);
+        readStatus();
+
+
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -293,7 +321,14 @@ public class RoomActivity extends AppCompatActivity {
         });
     }
 
-    private void updateUi() {
+    private void readStatus() {
+        for (OnOffLight onOffLight : lights) {
+            Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
+        }
+    }
+
+    private synchronized void updateUi() {
+
         Log.d("Room Activity", "UpdateUi()");
 
         for (int i = 0; i < roomLayout.getChildCount(); i++) {
