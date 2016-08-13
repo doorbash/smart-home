@@ -19,16 +19,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.iranexiss.smarthome.R;
+import com.iranexiss.smarthome.model.elements.AirConditioner;
 
 public class AirCondRemoteDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
     Context context;
-    EditText subnetID;
-    EditText deviceID;
-    EditText channelNo;
     CallBack callback;
-
-    RotateAnimation rotate;
 
     ImageButton autoMode;
     ImageButton coolMode;
@@ -49,20 +45,19 @@ public class AirCondRemoteDialog extends Dialog {
     ImageButton tmp_down_btn;
     ImageButton tmp_up_btn;
 
-    boolean power = false;
-    int temp = 25;
-    int fan = 1;
-    int mode = 1;
+
+    AirConditioner input;
 
     public interface CallBack {
         void onCanceled();
     }
 
     //_____________________________________________________ Constructor ____________________________
-    public AirCondRemoteDialog(Context context, CallBack callback) {
+    public AirCondRemoteDialog(Context context, AirConditioner input, CallBack callback) {
         super(context);
         this.context = context;
         this.callback = callback;
+        this.input = input;
     }
 
     //_____________________________________________________ onCreate Function ______________________
@@ -99,7 +94,8 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                power = !power;
+                input.on = !input.on;
+                // TODO: send command here
                 updateUi();
             }
         });
@@ -108,9 +104,9 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!power) return;
-                if (temp <= 18) return;
-                temp--;
+                if (!input.on) return;
+                if (input.temp <= 18) return;
+                input.temp--;
                 updateUi();
             }
         });
@@ -119,9 +115,9 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!power) return;
-                if (temp >= 30) return;
-                temp++;
+                if (!input.on) return;
+                if (input.temp >= 30) return;
+                input.temp++;
                 updateUi();
             }
         });
@@ -130,10 +126,10 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!power) return;
-                fan++;
-                fan = fan % 4;
-                Log.d("AirCondRemote", "fan = " + fan);
+                if (!input.on && input.fan != null) return;
+                input.fanIndex--;
+                input.fanIndex = input.fanIndex < 0 ? (input.fan.length - 1) : input.fanIndex % input.fan.length;
+                Log.d("AirCondRemote", "fan = " + input.fanIndex);
                 updateUi();
             }
         });
@@ -142,9 +138,9 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!power) return;
-                mode++;
-                mode = mode % 4;
+                if (!input.on && input.mode != null) return;
+                input.modeIndex++;
+                input.modeIndex = input.modeIndex % input.mode.length;
                 updateUi();
             }
         });
@@ -171,14 +167,14 @@ public class AirCondRemoteDialog extends Dialog {
     }
 
     public void updateUi() {
-        tempTxt.setText(temp + "");
+        tempTxt.setText(input.temp + "");
         updateFanUi();
         updateModeUi();
         updatePowerUi();
     }
 
     public void updatePowerUi() {
-        if (!power) {
+        if (!input.on) {
             autoMode.setVisibility(View.INVISIBLE);
             coolMode.setVisibility(View.INVISIBLE);
             fanMode.setVisibility(View.INVISIBLE);
@@ -201,27 +197,27 @@ public class AirCondRemoteDialog extends Dialog {
 
     public void updateFanUi() {
         Log.d("AirCondRemote", "updateFanUi");
-        Log.d("AirCondRemote", "fan is " + fan);
-        switch (fan) {
-            case 0:
+        Log.d("AirCondRemote", "fan is " + input.fanIndex);
+        switch (input.fanIndex) {
+            case AirConditioner.FAN_AUTO:
                 fan0.setAlpha(1.0f);
                 fan1.setAlpha(1.0f);
                 fan2.setAlpha(1.0f);
                 fanAuto.setVisibility(View.VISIBLE);
                 break;
-            case 1:
+            case AirConditioner.FAN_LOW:
                 fan0.setAlpha(1.0f);
                 fan1.setAlpha(0.0f);
                 fan2.setAlpha(0.0f);
                 fanAuto.setVisibility(View.INVISIBLE);
                 break;
-            case 2:
+            case AirConditioner.FAN_MEDIUM:
                 fan0.setAlpha(1.0f);
                 fan1.setAlpha(1.0f);
                 fan2.setAlpha(0.0f);
                 fanAuto.setVisibility(View.INVISIBLE);
                 break;
-            case 3:
+            case AirConditioner.FAN_HIGH:
                 fan0.setAlpha(1.0f);
                 fan1.setAlpha(1.0f);
                 fan2.setAlpha(1.0f);
@@ -231,26 +227,26 @@ public class AirCondRemoteDialog extends Dialog {
     }
 
     public void updateModeUi() {
-        switch (mode) {
-            case 0:
+        switch (input.modeIndex) {
+            case AirConditioner.MODE_AUTO:
                 autoMode.setBackgroundResource(R.drawable.air_mode_auto_sel);
                 coolMode.setBackgroundResource(R.drawable.air_mode_cool);
                 fanMode.setBackgroundResource(R.drawable.air_mode_fan);
                 heatMode.setBackgroundResource(R.drawable.air_mode_heat);
                 break;
-            case 1:
+            case AirConditioner.MODE_COOL:
                 autoMode.setBackgroundResource(R.drawable.air_mode_auto);
                 coolMode.setBackgroundResource(R.drawable.air_mode_cool_sel);
                 fanMode.setBackgroundResource(R.drawable.air_mode_fan);
                 heatMode.setBackgroundResource(R.drawable.air_mode_heat);
                 break;
-            case 2:
+            case AirConditioner.MODE_FAN:
                 autoMode.setBackgroundResource(R.drawable.air_mode_auto);
                 coolMode.setBackgroundResource(R.drawable.air_mode_cool);
                 fanMode.setBackgroundResource(R.drawable.air_mode_fan_sel);
                 heatMode.setBackgroundResource(R.drawable.air_mode_heat);
                 break;
-            case 3:
+            case AirConditioner.MODE_HEAT:
                 autoMode.setBackgroundResource(R.drawable.air_mode_auto);
                 coolMode.setBackgroundResource(R.drawable.air_mode_cool);
                 fanMode.setBackgroundResource(R.drawable.air_mode_fan);

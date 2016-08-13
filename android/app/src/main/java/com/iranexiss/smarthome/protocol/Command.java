@@ -1,6 +1,10 @@
 package com.iranexiss.smarthome.protocol;
 
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.ReadAcFanMode;
+import com.iranexiss.smarthome.protocol.api.ReadAcFanModeResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcStatus;
+import com.iranexiss.smarthome.protocol.api.ReadAcStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
@@ -365,6 +369,18 @@ public class Command {
                 break;
             case SingleChannelControl.OPCODE:
                 ret = new SingleChannelControl(payload);
+                break;
+            case ReadAcStatus.OPCODE:
+                ret = new ReadAcStatus();
+                break;
+            case ReadAcStatusResponse.OPCODE:
+                ret = new ReadAcStatusResponse(payload);
+                break;
+            case ReadAcFanMode.OPCODE:
+                ret = new ReadAcFanMode();
+                break;
+            case ReadAcFanModeResponse.OPCODE:
+                ret = new ReadAcFanModeResponse(payload);
                 break;
         }
 

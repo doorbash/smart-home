@@ -29,63 +29,56 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:layout_margin="10dp"
-                android:id="@+id/imgMode0"
-                android:layout_width="0px"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/air_mode_auto" />
-
-            <ImageButton
-                android:layout_margin="10dp"
                 android:id="@+id/imgMode1"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:background="@drawable/air_mode_cool_sel" />
-
-            <!--<ImageButton-->
-            <!--android:id="@+id/imgMode2"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="10.0dip"-->
-            <!--android:layout_marginRight="10.0dip"-->
-            <!--android:background="@drawable/air_mode_dry" />-->
+                android:background="@drawable/air_mode_cool" />
 
             <ImageButton
+                android:id="@+id/imgMode4"
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
                 android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/air_mode_heat" />
+
+            <ImageButton
                 android:id="@+id/imgMode3"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/air_mode_fan" />
 
             <ImageButton
-                android:layout_margin="10dp"
-                android:id="@+id/imgMode4"
+                android:id="@+id/imgMode0"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_weight="1"
-                android:background="@drawable/air_mode_heat" />
+                android:background="@drawable/air_mode_auto" />
+
+
         </LinearLayout>
 
         <LinearLayout
-            android:gravity="bottom"
-            android:layout_marginBottom="5dp"
-            android:orientation="horizontal"
             android:id="@+id/viewMode1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/imageView2"
             android:layout_alignParentLeft="true"
-            android:layout_alignRight="@id/imageView2">
+            android:layout_alignRight="@id/imageView2"
+            android:layout_marginBottom="5dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
 
             <LinearLayout
-                android:layout_weight="3"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10.0dip"
-                >
+                android:layout_weight="3">
 
                 <ImageView
                     android:id="@+id/imgFan0"
@@ -118,13 +111,13 @@
             </LinearLayout>
 
             <LinearLayout
+                android:layout_width="0px"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="-10dp"
-                android:paddingRight="20dp"
+                android:layout_weight="2"
                 android:gravity="right|bottom"
                 android:orientation="horizontal"
-                android:layout_weight="2"
-                android:layout_width="0px"
-                android:layout_height="wrap_content">
+                android:paddingRight="20dp">
 
                 <TextView
                     android:id="@+id/txtTemp"

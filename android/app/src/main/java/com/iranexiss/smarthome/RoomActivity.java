@@ -37,6 +37,10 @@ import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.ReadAcFanMode;
+import com.iranexiss.smarthome.protocol.api.ReadAcFanModeResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcStatus;
+import com.iranexiss.smarthome.protocol.api.ReadAcStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
@@ -142,7 +146,7 @@ public class RoomActivity extends AppCompatActivity {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
 
-        Netctl.init(new Netctl.IEventHandler() {
+        Netctl.init(this,new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
                 Log.d("FREPORT", command.toString());
@@ -177,6 +181,28 @@ public class RoomActivity extends AppCompatActivity {
                             updateUi();
                         }
                     });
+                } else if (command instanceof ReadAcFanModeResponse) {
+                    ReadAcFanModeResponse response = ((ReadAcFanModeResponse) command);
+                    for (AirConditioner airConditioner : airconds) {
+                        if (response.subnetID == airConditioner.subnetId && response.deviceID == airConditioner.deviceId) {
+                            airConditioner.fan = response.fan;
+                            airConditioner.mode = response.mode;
+                        }
+                    }
+                } else if (command instanceof ReadAcStatusResponse) {
+                    ReadAcStatusResponse response = ((ReadAcStatusResponse) command);
+                    for (AirConditioner airConditioner : airconds) {
+                        Log.d("Room Activity", "AC is " + (response.on ? "on" : "off"));
+                        if (airConditioner.subnetId == response.subnetID && airConditioner.deviceId == response.deviceID) {
+                            airConditioner.temp = response.temp;
+                            airConditioner.on = response.on;
+                            airConditioner.fanIndex = response.fanIndex;
+                            airConditioner.modeIndex = response.modeIndex;
+                            airConditioner.coolTempSetPoint = response.coolTempSetPoint;
+                            airConditioner.heatTempSetPoint = response.heatTempSetPoint;
+                            airConditioner.autoTempSetPoint = response.autoTempSetPoint;
+                        }
+                    }
                 }
 
 
@@ -322,9 +348,26 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private void readStatus() {
+
+        // Lights
+
         for (OnOffLight onOffLight : lights) {
             Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
         }
+
+        // AirConditioners
+
+        for (AirConditioner airConditioner : airconds) {
+            Netctl.sendCommand(new ReadAcFanMode().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Netctl.sendCommand(new ReadAcStatus().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+        }
+
+
     }
 
     private synchronized void updateUi() {
@@ -631,7 +674,7 @@ public class RoomActivity extends AppCompatActivity {
             } else if (v.getTag() instanceof AirConditioner) {
                 pauseTimer = true;
                 timer = TIMER_INIT;
-                AirCondRemoteDialog dialog = new AirCondRemoteDialog(RoomActivity.this, new AirCondRemoteDialog.CallBack() {
+                AirCondRemoteDialog dialog = new AirCondRemoteDialog(RoomActivity.this, (AirConditioner) v.getTag(), new AirCondRemoteDialog.CallBack() {
                     @Override
                     public void onCanceled() {
                         pauseTimer = false;

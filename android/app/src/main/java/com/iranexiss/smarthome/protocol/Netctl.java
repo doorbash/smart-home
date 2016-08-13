@@ -1,8 +1,12 @@
 package com.iranexiss.smarthome.protocol;
 
+import android.app.Activity;
+import android.content.Context;
 import android.nfc.Tag;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
@@ -24,7 +28,7 @@ public class Netctl {
     private static DatagramSocket serverSocket;
 //    private static boolean stop = false;
 
-    public static void init(IEventHandler iEventHandler) {
+    public static void init(final Context context, IEventHandler iEventHandler) {
 //        if (eventHandler != null) return;
         eventHandler = iEventHandler;
 
@@ -67,6 +71,14 @@ public class Netctl {
 
 
                 } catch (Exception e) {
+                    if (e instanceof BindException) {
+                        ((Activity) context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, "Address already in use", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                     e.printStackTrace();
                     Log.d(TAG, e.getMessage());
                 }
