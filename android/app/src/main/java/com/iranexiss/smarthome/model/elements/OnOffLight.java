@@ -27,9 +27,10 @@ public class OnOffLight extends BaseModel {
     @Column
     public int channelId;
     @Column
-    public boolean status;
-    @Column
     public int room;
+
+
+    public boolean status;
 
     @Override
     public boolean equals(Object obj) {

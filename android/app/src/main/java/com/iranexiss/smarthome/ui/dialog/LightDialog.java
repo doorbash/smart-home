@@ -9,12 +9,15 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.Room;
 import com.iranexiss.smarthome.model.elements.OnOffLight;
+import com.iranexiss.smarthome.ui.adapter.LightSpinnerAdapter;
 import com.iranexiss.smarthome.util.Font;
 
 public class LightDialog extends Dialog {
@@ -22,12 +25,16 @@ public class LightDialog extends Dialog {
     Context context;
     EditText subnetID;
     EditText deviceID;
-    EditText channelNo;
     TextView title;
     Button submit;
     CallBack callback;
     Room room;
     Object input;
+    EditText channelNo;
+    TextView typeTitle;
+    //    Spinner typeSpinner;
+    RadioButton typeOnOff;
+    RadioButton typeRgb;
 
     public interface CallBack {
         void onSubmitted(Object output);
@@ -57,6 +64,9 @@ public class LightDialog extends Dialog {
         deviceID = (EditText) findViewById(R.id.device_id);
         channelNo = (EditText) findViewById(R.id.channel_no);
         submit = (Button) findViewById(R.id.submit);
+        typeTitle = (TextView) findViewById(R.id.light_type_title);
+        typeOnOff = (RadioButton) findViewById(R.id.type_on_off);
+        typeRgb = (RadioButton) findViewById(R.id.type_rgb);
 
         if (input != null) {
             if (input instanceof OnOffLight) {
@@ -64,13 +74,16 @@ public class LightDialog extends Dialog {
                 OnOffLight onOffLight = (OnOffLight) input;
                 subnetID.setText(onOffLight.subnetID + "");
                 deviceID.setText(onOffLight.deviceId + "");
-                channelNo.setText(onOffLight.channelId+"");
+                channelNo.setText(onOffLight.channelId + "");
             }
         }
 
 
         title.setTypeface(Font.getInstance(context).iranSans);
         submit.setTypeface(Font.getInstance(context).iranSans);
+        typeTitle.setTypeface(Font.getInstance(context).iranSans);
+        typeRgb.setTypeface(Font.getInstance(context).iranSans);
+        typeOnOff.setTypeface(Font.getInstance(context).iranSans);
 
         submit.setOnClickListener(new View.OnClickListener() {
 
@@ -83,8 +96,8 @@ public class LightDialog extends Dialog {
                     int did = Integer.parseInt(deviceID.getText().toString());
                     int chNo = Integer.parseInt(channelNo.getText().toString());
 
-                    if(input != null) {
-                        if(input instanceof OnOffLight) {
+                    if (input != null) {
+                        if (input instanceof OnOffLight) {
                             OnOffLight onOffLight = (OnOffLight) input;
                             onOffLight.subnetID = sid;
                             onOffLight.deviceId = did;
@@ -92,8 +105,7 @@ public class LightDialog extends Dialog {
                             onOffLight.save();
                             callback.onSubmitted(onOffLight);
                         }
-                    }
-                    else {
+                    } else {
                         OnOffLight onOffLight = new OnOffLight();
                         onOffLight.subnetID = sid;
                         onOffLight.deviceId = did;

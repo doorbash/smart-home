@@ -1,7 +1,9 @@
 package com.iranexiss.smarthome;
 
 import android.content.ClipData;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -35,6 +37,7 @@ import com.iranexiss.smarthome.model.elements.FloorHeat;
 import com.iranexiss.smarthome.model.elements.OnOffLight;
 import com.iranexiss.smarthome.model.elements.OnOffLight_Table;
 import com.iranexiss.smarthome.model.elements.RGBLight;
+import com.iranexiss.smarthome.model.elements.RGBLight_Table;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
@@ -69,9 +72,10 @@ import java.util.List;
 
 public class RoomActivity extends AppCompatActivity {
 
-    ArrayList<OnOffLight> lights = new ArrayList<>();
-    ArrayList<AirConditioner> airconds = new ArrayList<>();
-    ArrayList<AudioPlayer> audioPlayers = new ArrayList<>();
+    ArrayList<OnOffLight> on_off_light_list = new ArrayList<>();
+    ArrayList<AirConditioner> ac_list = new ArrayList<>();
+    ArrayList<AudioPlayer> audio_player_list = new ArrayList<>();
+    ArrayList<RGBLight> rgb_light_list = new ArrayList<>();
 
     Room room; // Room data
     RelativeLayout toolbar;  // Bottom toolbar
@@ -160,7 +164,7 @@ public class RoomActivity extends AppCompatActivity {
 
 
                 if (command instanceof ForwardlyReportStatus) {
-                    for (OnOffLight light : lights) {
+                    for (OnOffLight light : on_off_light_list) {
                         if (light.subnetID == command.subnetID && light.deviceId == command.deviceID) {
                             light.status = ((ForwardlyReportStatus) command).channelsStatus[light.channelId - 1];
                         }
@@ -175,7 +179,7 @@ public class RoomActivity extends AppCompatActivity {
                     });
                 } else if (command instanceof ReadChannelsStatusResponse) {
 
-                    for (OnOffLight light : lights) {
+                    for (OnOffLight light : on_off_light_list) {
                         if (light.subnetID == command.subnetID && light.deviceId == command.deviceID) {
                             light.status = ((ReadChannelsStatusResponse) command).channelsStatus[light.channelId - 1] > 0;
                         }
@@ -190,7 +194,7 @@ public class RoomActivity extends AppCompatActivity {
                     });
                 } else if (command instanceof ReadAcFanModeResponse) {
                     ReadAcFanModeResponse response = ((ReadAcFanModeResponse) command);
-                    for (AirConditioner airConditioner : airconds) {
+                    for (AirConditioner airConditioner : ac_list) {
                         if (response.subnetID == airConditioner.subnetId && response.deviceID == airConditioner.deviceId) {
                             airConditioner.fan = response.fan;
                             airConditioner.mode = response.mode;
@@ -198,7 +202,7 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 } else if (command instanceof ReadAcStatusResponse) {
                     ReadAcStatusResponse response = ((ReadAcStatusResponse) command);
-                    for (AirConditioner ac : airconds) {
+                    for (AirConditioner ac : ac_list) {
                         Log.d("Room Activity", "AC is " + (response.on ? "on" : "off"));
                         Log.d("Room Activity", "TEMP is " + response.temp);
                         if (ac.subnetId == response.subnetID && ac.deviceId == response.deviceID) {
@@ -220,7 +224,7 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 } else if (command instanceof ReadAcTempRangeResponse) {
                     ReadAcTempRangeResponse response = ((ReadAcTempRangeResponse) command);
-                    for (AirConditioner ac : airconds) {
+                    for (AirConditioner ac : ac_list) {
                         if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
 
                             ac.minCoolTemp = response.coolRange[0];
@@ -241,14 +245,14 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 } else if (command instanceof ReadAcCelsiusFahrenheitFlagResponse) {
                     ReadAcCelsiusFahrenheitFlagResponse response = ((ReadAcCelsiusFahrenheitFlagResponse) command);
-                    for (AirConditioner ac : airconds) {
+                    for (AirConditioner ac : ac_list) {
                         if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
                             ac.fahrenheit = response.fahrenheit;
                         }
                     }
                 } else if (command instanceof PanelControlResponse) {
                     PanelControlResponse response = (PanelControlResponse) command;
-                    for (AirConditioner ac : airconds) {
+                    for (AirConditioner ac : ac_list) {
                         if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
                             switch (response.type) {
                                 case PanelControl.AC_MODE:
@@ -435,12 +439,12 @@ public class RoomActivity extends AppCompatActivity {
                 {
 
                     // Lights
-                    for (OnOffLight onOffLight : lights) {
+                    for (OnOffLight onOffLight : on_off_light_list) {
                         Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
                     }
 
                     // AirConditioners
-                    for (AirConditioner airConditioner : airconds) {
+                    for (AirConditioner airConditioner : ac_list) {
                         Netctl.sendCommand(new ReadAcFanMode().setTarget(airConditioner.subnetId, airConditioner.deviceId));
                         try {
                             Thread.sleep(200);
@@ -499,6 +503,9 @@ public class RoomActivity extends AppCompatActivity {
                         }
                         element.resetPowerState();
                     }
+                } else if (tag instanceof RGBLight) {
+                    RGBLight element = (RGBLight) tag;
+                    ((ImageButton) v).setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
                 }
 
             }
@@ -687,7 +694,7 @@ public class RoomActivity extends AppCompatActivity {
         List<OnOffLight> onOffLightList = SQLite.select().from(OnOffLight.class).where(OnOffLight_Table.room.is(roomId)).queryList();
         for (OnOffLight element : onOffLightList) {
 
-            if (!lights.contains(element)) lights.add(element);
+            if (!on_off_light_list.contains(element)) on_off_light_list.add(element);
 
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -713,7 +720,7 @@ public class RoomActivity extends AppCompatActivity {
         List<AirConditioner> aircondList = SQLite.select().from(AirConditioner.class).where(AirConditioner_Table.room.is(roomId)).queryList();
         for (AirConditioner element : aircondList) {
 
-            if (!airconds.contains(element)) airconds.add(element);
+            if (!ac_list.contains(element)) ac_list.add(element);
 
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -739,7 +746,7 @@ public class RoomActivity extends AppCompatActivity {
         List<AudioPlayer> audioPlayers = SQLite.select().from(AudioPlayer.class).where(AudioPlayer_Table.room.is(roomId)).queryList();
         for (AudioPlayer element : audioPlayers) {
 
-            if (!audioPlayers.contains(element)) audioPlayers.add(element);
+            if (!audio_player_list.contains(element)) audio_player_list.add(element);
 
             View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
 
@@ -756,6 +763,32 @@ public class RoomActivity extends AppCompatActivity {
             elementView.setOnLongClickListener(elementOnLongClickListener);
 
             ((ImageView) elementView).setImageResource(R.drawable.music);
+
+            elementView.setLayoutParams(params);
+
+            roomLayout.addView(elementView);
+        }
+
+        List<RGBLight> rgbLights = SQLite.select().from(RGBLight.class).where(RGBLight_Table.room.is(roomId)).queryList();
+        for (RGBLight element : rgbLights) {
+
+            if (!rgb_light_list.contains(element)) rgb_light_list.add(element);
+
+            View elementView = getLayoutInflater().inflate(R.layout.element, null, false);
+
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+            params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            params.leftMargin = element.x;
+            params.topMargin = element.y;
+
+            elementView.setTag(element);
+
+            elementView.setOnClickListener(elementOnClickListener);
+            elementView.setOnLongClickListener(elementOnLongClickListener);
+
+            ((ImageView) elementView).setImageResource(R.drawable.rgb);
 
             elementView.setLayoutParams(params);
 
@@ -817,7 +850,7 @@ public class RoomActivity extends AppCompatActivity {
             ClipData data = ClipData.newPlainText("", "");
             View.DragShadowBuilder shadowBuilder = new ElementDragShadowBuilder(v);
             v.startDrag(data, shadowBuilder, v, 0);
-            v.setVisibility(View.INVISIBLE);
+            v.setAlpha(0.0f);
             return true;
         }
     }
@@ -953,7 +986,7 @@ public class RoomActivity extends AppCompatActivity {
                     }
 
                     editDeleteLayout.setVisibility(View.INVISIBLE);
-                    elementView.setVisibility(View.VISIBLE);
+                    elementView.setAlpha(1.0f);
 
                     break;
                 case DragEvent.ACTION_DRAG_ENDED:

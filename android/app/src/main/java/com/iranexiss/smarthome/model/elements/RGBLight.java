@@ -24,28 +24,17 @@ public class RGBLight extends BaseModel {
     public int y;
 
     @Column
-    public int rSubnetId;
+    public int subnetId;
     @Column
-    public int rDeviceId;
-    @Column
-    public int rChannelNo;
-    //--------------------
-    @Column
-    public int gSubnetId;
-    @Column
-    public int gDeviceId;
-    @Column
-    public int gChannelNo;
-    //--------------------
-    @Column
-    public int bSubnetId;
-    @Column
-    public int bDeviceId;
-    @Column
-    public int bChannelNo;
+    public int deviceId;
 
     @Column
     public int room;
+
+    public int red; // 0-100
+    public int green; // 0-100
+    public int blue; // 0-100
+    public int white; // 0-100
 
     @Override
     public boolean equals(Object obj) {
