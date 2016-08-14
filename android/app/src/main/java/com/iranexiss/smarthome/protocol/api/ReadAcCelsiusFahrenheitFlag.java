@@ -5,10 +5,11 @@ import com.iranexiss.smarthome.protocol.Command;
 /**
  * Created by Milad Doorbash on 8/13/16.
  */
-public class ReadAcFanMode extends Command {
-    public static final int OPCODE = 0xE124;
+public class ReadAcCelsiusFahrenheitFlag extends Command {
 
-    public ReadAcFanMode() {
+    public static final int OPCODE = 0xE120;
+
+    public ReadAcCelsiusFahrenheitFlag() {
         this.operationCode = OPCODE;
     }
 }

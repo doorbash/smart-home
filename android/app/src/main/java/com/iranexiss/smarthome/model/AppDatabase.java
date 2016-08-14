@@ -3,7 +3,7 @@ package com.iranexiss.smarthome.model;
 import com.raizlabs.android.dbflow.annotation.Database;
 
 /**
- * Created by root on 8/9/16.
+ * Created by Milad Doorbash on 8/9/16.
  */
 @Database(name = AppDatabase.NAME, version = AppDatabase.VERSION)
 public class AppDatabase {

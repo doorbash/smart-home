@@ -1,6 +1,7 @@
 package com.iranexiss.smarthome.ui.dialog;
 
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,9 +21,14 @@ import android.widget.TextView;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.elements.AirConditioner;
+import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.PanelControl;
+
+import org.w3c.dom.Text;
 
 public class AirCondRemoteDialog extends Dialog {
     //_____________________________________________________ Properties  ____________________________
+
     Context context;
     CallBack callback;
 
@@ -36,7 +42,7 @@ public class AirCondRemoteDialog extends Dialog {
     ImageView fan2;
     TextView fanAuto;
 
-    ImageView tempC;
+    TextView tempC;
     TextView tempTxt;
 
     ImageButton power_btn;
@@ -44,6 +50,8 @@ public class AirCondRemoteDialog extends Dialog {
     ImageButton mode_btn;
     ImageButton tmp_down_btn;
     ImageButton tmp_up_btn;
+
+//    private int temp;
 
 
     AirConditioner input;
@@ -53,11 +61,22 @@ public class AirCondRemoteDialog extends Dialog {
     }
 
     //_____________________________________________________ Constructor ____________________________
-    public AirCondRemoteDialog(Context context, AirConditioner input, CallBack callback) {
+    public AirCondRemoteDialog(final Context context, AirConditioner input, CallBack callback) {
         super(context);
         this.context = context;
         this.callback = callback;
         this.input = input;
+        input.listener = new AirConditioner.DataChanged() {
+            @Override
+            public void onDataChanged() {
+                ((Activity) context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUi();
+                    }
+                });
+            }
+        };
     }
 
     //_____________________________________________________ onCreate Function ______________________
@@ -81,7 +100,7 @@ public class AirCondRemoteDialog extends Dialog {
         fan2 = (ImageView) findViewById(R.id.imgFan2);
         fanAuto = (TextView) findViewById(R.id.txtFanAuto);
 
-        tempC = (ImageView) findViewById(R.id.temp_c);
+        tempC = (TextView) findViewById(R.id.temp_c);
         tempTxt = (TextView) findViewById(R.id.txtTemp);
 
         power_btn = (ImageButton) findViewById(R.id.power_btn);
@@ -94,9 +113,9 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                input.on = !input.on;
-                // TODO: send command here
-                updateUi();
+//                input.togglePower();
+                Netctl.sendCommand(new PanelControl(PanelControl.AC_ON_OFF, input.isOn() ? 0 : 1).setTarget(input.subnetId, input.deviceId));
+                //updateUi();
             }
         });
 
@@ -104,10 +123,23 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!input.on) return;
-                if (input.temp <= 18) return;
-                input.temp--;
-                updateUi();
+                if (!input.isOn() || input.getCurrentMode() == AirConditioner.MODE_FAN) return;
+                if (input.getCurrentSetPoint() <= input.getCurrentMinTemp()) return;
+                switch (input.getCurrentMode()) {
+                    case AirConditioner.MODE_AUTO:
+//                        input.autoTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.AUTO_TEMP_SET_POINT, input.getCurrentSetPoint() - 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                    case AirConditioner.MODE_COOL:
+//                        input.coolTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.COOL_TEMP_SET_POINT, input.getCurrentSetPoint() - 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                    case AirConditioner.MODE_HEAT:
+//                        input.heatTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.HEAT_TEMP_SET_POINT, input.getCurrentSetPoint() - 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                }
+                //updateUi();
             }
         });
 
@@ -115,10 +147,24 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!input.on) return;
-                if (input.temp >= 30) return;
-                input.temp++;
-                updateUi();
+                if (!input.isOn() || input.getCurrentMode() == AirConditioner.MODE_FAN) return;
+                if (input.getCurrentSetPoint() >= input.getCurrentMaxTemp()) return;
+//                temp++;
+                switch (input.getCurrentMode()) {
+                    case AirConditioner.MODE_AUTO:
+//                        input.autoTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.AUTO_TEMP_SET_POINT, input.getCurrentSetPoint() + 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                    case AirConditioner.MODE_COOL:
+//                        input.coolTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.COOL_TEMP_SET_POINT, input.getCurrentSetPoint() + 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                    case AirConditioner.MODE_HEAT:
+//                        input.heatTempSetPoint = temp;
+                        Netctl.sendCommand(new PanelControl(PanelControl.HEAT_TEMP_SET_POINT, input.getCurrentSetPoint() + 1).setTarget(input.subnetId, input.deviceId));
+                        break;
+                }
+                //updateUi();
             }
         });
 
@@ -126,11 +172,13 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!input.on && input.fan != null) return;
-                input.fanIndex--;
-                input.fanIndex = input.fanIndex < 0 ? (input.fan.length - 1) : input.fanIndex % input.fan.length;
-                Log.d("AirCondRemote", "fan = " + input.fanIndex);
-                updateUi();
+                if (!input.isOn() || input.fan.isEmpty()) return;
+                int fi = input.fanIndex;
+                fi--;
+                fi = fi < 0 ? (input.fan.size() - 1) : fi % input.fan.size();
+                Netctl.sendCommand(new PanelControl(PanelControl.FAN_SPEED, input.fan.get(fi)).setTarget(input.subnetId, input.deviceId));
+//                Log.d("AirCondRemote", "fan = " + input.fanIndex);
+                //updateUi();
             }
         });
 
@@ -138,10 +186,16 @@ public class AirCondRemoteDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 vibrate();
-                if (!input.on && input.mode != null) return;
-                input.modeIndex++;
-                input.modeIndex = input.modeIndex % input.mode.length;
-                updateUi();
+                if (!input.isOn() || input.mode.isEmpty()) return;
+                int mi = input.modeIndex;
+                mi++;
+                mi = mi % input.mode.size();
+
+                Netctl.sendCommand(new PanelControl(PanelControl.AC_MODE, input.mode.get(mi)).setTarget(input.subnetId, input.deviceId));
+
+//                temp = input.getCurrentSetPoint();
+
+                //updateUi();
             }
         });
 
@@ -167,14 +221,20 @@ public class AirCondRemoteDialog extends Dialog {
     }
 
     public void updateUi() {
-        tempTxt.setText(input.temp + "");
+        Log.d("AirConRemote", "updateUi()");
+        tempTxt.setText(input.getCurrentSetPoint() + "");
+        if (input.fahrenheit) {
+            tempC.setText("℉");
+        } else {
+            tempC.setText("℃");
+        }
         updateFanUi();
         updateModeUi();
         updatePowerUi();
     }
 
     public void updatePowerUi() {
-        if (!input.on) {
+        if (!input.isOn()) {
             autoMode.setVisibility(View.INVISIBLE);
             coolMode.setVisibility(View.INVISIBLE);
             fanMode.setVisibility(View.INVISIBLE);

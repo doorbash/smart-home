@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import com.iranexiss.smarthome.R;
 
 /**
- * Created by root on 8/11/16.
+ * Created by Milad Doorbash on 8/11/16.
  */
 public class PlaybackFragment extends android.app.Fragment {
 

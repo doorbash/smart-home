@@ -6,7 +6,7 @@ import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 
 /**
- * Created by root on 8/11/16.
+ * Created by Milad Doorbash on 8/11/16.
  */
 public class CustomViewPager extends ViewPager {
     PagerAdapter mPagerAdapter;

@@ -127,13 +127,23 @@
                     android:textColor="#ff03f0ff"
                     android:textSize="50sp" />
 
-                <ImageView
+                <TextView
+                    android:layout_marginLeft="5dp"
                     android:id="@+id/temp_c"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginLeft="5.0dip"
-                    android:background="@drawable/air_temp_c"
-                    android:baselineAlignBottom="true" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="℃"
+                    android:textColor="#ff03f0ff"
+                    android:textSize="35sp" />
+
+                <!--<ImageView-->
+                    <!--android:id="@+id/temp_c"-->
+                    <!--android:layout_width="30dp"-->
+                    <!--android:layout_height="30dp"-->
+                    <!--android:layout_marginLeft="5.0dip"-->
+                    <!--android:background="@drawable/air_temp_c"-->
+                    <!--android:baselineAlignBottom="true" />-->
+
             </LinearLayout>
         </LinearLayout>
 

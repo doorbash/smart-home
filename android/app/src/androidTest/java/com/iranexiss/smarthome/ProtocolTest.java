@@ -67,7 +67,7 @@ public class ProtocolTest {
     @Test
     public void queryOnlineDeviecs() throws InterruptedException {
         final CountDownLatch signal = new CountDownLatch(1);
-        Netctl.init(new Netctl.IEventHandler() {
+        Netctl.init(context,new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
                 Log.d("ProtocolTest", "new command : " + command);
@@ -105,7 +105,7 @@ public class ProtocolTest {
     @Test
     public void testLight() throws InterruptedException {
         final CountDownLatch signal = new CountDownLatch(1);
-        Netctl.init(new Netctl.IEventHandler() {
+        Netctl.init(context,new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
                 Log.d("ProtocolTest", "new command : " + command);
@@ -156,7 +156,7 @@ public class ProtocolTest {
     @Test
     public void readChannelStatusTest() throws InterruptedException {
         final CountDownLatch signal = new CountDownLatch(1);
-        Netctl.init(new Netctl.IEventHandler() {
+        Netctl.init(context,new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
                 Log.d("ProtocolTest", "new command : " + command);

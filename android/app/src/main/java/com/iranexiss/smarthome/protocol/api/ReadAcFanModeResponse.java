@@ -1,15 +1,20 @@
 package com.iranexiss.smarthome.protocol.api;
 
+import android.util.Log;
+
 import com.iranexiss.smarthome.protocol.Command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Created by root on 8/13/16.
+ * Created by Milad Doorbash on 8/13/16.
  */
 public class ReadAcFanModeResponse extends Command {
     public static final int OPCODE = 0xE125;
 
-    public int[] fan;
-    public int[] mode;
+    public List<Integer> fan = new ArrayList<>();
+    public List<Integer> mode = new ArrayList<>();
 
     public ReadAcFanModeResponse() {
         this.operationCode = OPCODE;
@@ -19,15 +24,19 @@ public class ReadAcFanModeResponse extends Command {
         this.operationCode = OPCODE;
         this.payload = payload;
 
-        fan = new int[payload[0]];
+        int fanSize = payload[0];
         int i = 1;
-        for (int cnt = 0; i <= fan.length; i++, cnt++) {
-            fan[cnt] = payload[i];
+        for (; i <= fanSize; i++) {
+            fan.add(((int) payload[i]));
         }
-        mode = new int[payload[i++]];
-        for (int cnt = 0; i <= mode.length; i++, cnt++) {
-            mode[cnt] = payload[i];
+        int modeSize = payload[i++];
+        for (int cnt = 0; cnt < modeSize; i++, cnt++) {
+            mode.add((int) payload[i]);
         }
+
+        Log.d("ReadAcFanModeResponse", "fan : " + fan.toString());
+        Log.d("ReadAcFanModeResponse", "mode : " + mode.toString());
+
         // payload[i] = 0 ?
     }
 }

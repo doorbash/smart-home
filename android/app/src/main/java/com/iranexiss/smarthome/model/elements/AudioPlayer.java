@@ -9,7 +9,7 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 import java.io.Serializable;
 
 /**
- * Created by root on 8/9/16.
+ * Created by Milad Doorbash on 8/9/16.
  */
 @Table(database = AppDatabase.class)
 public class AudioPlayer extends BaseModel {

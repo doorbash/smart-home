@@ -1,10 +1,16 @@
 package com.iranexiss.smarthome.protocol;
 
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.PanelControl;
+import com.iranexiss.smarthome.protocol.api.PanelControlResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcCelsiusFahrenheitFlag;
+import com.iranexiss.smarthome.protocol.api.ReadAcCelsiusFahrenheitFlagResponse;
 import com.iranexiss.smarthome.protocol.api.ReadAcFanMode;
 import com.iranexiss.smarthome.protocol.api.ReadAcFanModeResponse;
 import com.iranexiss.smarthome.protocol.api.ReadAcStatus;
 import com.iranexiss.smarthome.protocol.api.ReadAcStatusResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcTempRange;
+import com.iranexiss.smarthome.protocol.api.ReadAcTempRangeResponse;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
@@ -381,6 +387,24 @@ public class Command {
                 break;
             case ReadAcFanModeResponse.OPCODE:
                 ret = new ReadAcFanModeResponse(payload);
+                break;
+            case ReadAcTempRange.OPCODE:
+                ret = new ReadAcTempRange();
+                break;
+            case ReadAcTempRangeResponse.OPCODE:
+                ret = new ReadAcTempRangeResponse(payload);
+                break;
+            case ReadAcCelsiusFahrenheitFlag.OPCODE:
+                ret = new ReadAcCelsiusFahrenheitFlag();
+                break;
+            case ReadAcCelsiusFahrenheitFlagResponse.OPCODE:
+                ret = new ReadAcCelsiusFahrenheitFlagResponse(payload);
+                break;
+            case PanelControl.OPCODE:
+                ret = new PanelControl(payload);
+                break;
+            case PanelControlResponse.OPCODE:
+                ret = new PanelControlResponse(payload);
                 break;
         }
 

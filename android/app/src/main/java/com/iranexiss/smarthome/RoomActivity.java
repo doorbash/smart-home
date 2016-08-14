@@ -2,10 +2,10 @@ package com.iranexiss.smarthome;
 
 import android.content.ClipData;
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.MotionEvent;
@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -35,21 +36,27 @@ import com.iranexiss.smarthome.model.elements.OnOffLight;
 import com.iranexiss.smarthome.model.elements.OnOffLight_Table;
 import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.protocol.Command;
-import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
+import com.iranexiss.smarthome.protocol.api.PanelControl;
+import com.iranexiss.smarthome.protocol.api.PanelControlResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcCelsiusFahrenheitFlag;
+import com.iranexiss.smarthome.protocol.api.ReadAcCelsiusFahrenheitFlagResponse;
 import com.iranexiss.smarthome.protocol.api.ReadAcFanMode;
 import com.iranexiss.smarthome.protocol.api.ReadAcFanModeResponse;
 import com.iranexiss.smarthome.protocol.api.ReadAcStatus;
 import com.iranexiss.smarthome.protocol.api.ReadAcStatusResponse;
+import com.iranexiss.smarthome.protocol.api.ReadAcTempRange;
+import com.iranexiss.smarthome.protocol.api.ReadAcTempRangeResponse;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
+import com.iranexiss.smarthome.ui.dialog.AirCondRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
 import com.iranexiss.smarthome.ui.dialog.LightDialog;
-import com.iranexiss.smarthome.ui.dialog.AirCondRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
@@ -57,8 +64,7 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ThreadFactory;
+
 ;
 
 public class RoomActivity extends AppCompatActivity {
@@ -83,6 +89,7 @@ public class RoomActivity extends AppCompatActivity {
     ElementOnLongClickListener elementOnLongClickListener = new ElementOnLongClickListener(); // Long click handler for elements
     Object selectedElement;
     Handler handler;
+    RotateAnimation acRotateAnimation;
 
     LinearLayout editDeleteLayout;
     RelativeLayout editLayout;
@@ -146,7 +153,7 @@ public class RoomActivity extends AppCompatActivity {
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(image);
 
-        Netctl.init(this,new Netctl.IEventHandler() {
+        Netctl.init(this, new Netctl.IEventHandler() {
             @Override
             public void onCommand(Command command) {
                 Log.d("FREPORT", command.toString());
@@ -191,16 +198,88 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 } else if (command instanceof ReadAcStatusResponse) {
                     ReadAcStatusResponse response = ((ReadAcStatusResponse) command);
-                    for (AirConditioner airConditioner : airconds) {
+                    for (AirConditioner ac : airconds) {
                         Log.d("Room Activity", "AC is " + (response.on ? "on" : "off"));
-                        if (airConditioner.subnetId == response.subnetID && airConditioner.deviceId == response.deviceID) {
-                            airConditioner.temp = response.temp;
-                            airConditioner.on = response.on;
-                            airConditioner.fanIndex = response.fanIndex;
-                            airConditioner.modeIndex = response.modeIndex;
-                            airConditioner.coolTempSetPoint = response.coolTempSetPoint;
-                            airConditioner.heatTempSetPoint = response.heatTempSetPoint;
-                            airConditioner.autoTempSetPoint = response.autoTempSetPoint;
+                        Log.d("Room Activity", "TEMP is " + response.temp);
+                        if (ac.subnetId == response.subnetID && ac.deviceId == response.deviceID) {
+                            ac.temp = response.temp;
+                            ac.setOn(response.on);
+                            ac.fanIndex = response.fanIndex;
+                            ac.modeIndex = response.modeIndex;
+                            ac.coolTempSetPoint = response.coolTempSetPoint;
+                            ac.heatTempSetPoint = response.heatTempSetPoint;
+                            ac.autoTempSetPoint = response.autoTempSetPoint;
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateUi();
+                            }
+                        });
+                    }
+                } else if (command instanceof ReadAcTempRangeResponse) {
+                    ReadAcTempRangeResponse response = ((ReadAcTempRangeResponse) command);
+                    for (AirConditioner ac : airconds) {
+                        if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
+
+                            ac.minCoolTemp = response.coolRange[0];
+                            ac.maxCoolTemp = response.coolRange[1];
+                            ac.minHeatTemp = response.heatRange[0];
+                            ac.maxHeatTemp = response.heatRange[1];
+                            ac.minAutoTemp = response.autoRange[0];
+                            ac.maxAutoTemp = response.autoRange[1];
+
+
+                            Log.d("Room Activity", "min cool temp : " + ac.minCoolTemp);
+                            Log.d("Room Activity", "max cool temp : " + ac.maxCoolTemp);
+                            Log.d("Room Activity", "min heat temp : " + ac.minHeatTemp);
+                            Log.d("Room Activity", "max heat temp : " + ac.maxHeatTemp);
+                            Log.d("Room Activity", "min auto temp : " + ac.minAutoTemp);
+                            Log.d("Room Activity", "max auto temp : " + ac.maxAutoTemp);
+                        }
+                    }
+                } else if (command instanceof ReadAcCelsiusFahrenheitFlagResponse) {
+                    ReadAcCelsiusFahrenheitFlagResponse response = ((ReadAcCelsiusFahrenheitFlagResponse) command);
+                    for (AirConditioner ac : airconds) {
+                        if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
+                            ac.fahrenheit = response.fahrenheit;
+                        }
+                    }
+                } else if (command instanceof PanelControlResponse) {
+                    PanelControlResponse response = (PanelControlResponse) command;
+                    for (AirConditioner ac : airconds) {
+                        if (response.subnetID == ac.subnetId && response.deviceID == ac.deviceId) {
+                            switch (response.type) {
+                                case PanelControl.AC_MODE:
+                                    if (ac.mode.indexOf(response.value) >= 0) {
+                                        ac.modeIndex = ac.mode.indexOf(response.value);
+                                        if (ac.listener != null) ac.listener.onDataChanged();
+                                    }
+                                    break;
+                                case PanelControl.AC_ON_OFF:
+                                    ac.setOn(response.value > 0);
+                                    if (ac.listener != null) ac.listener.onDataChanged();
+                                    break;
+                                case PanelControl.COOL_TEMP_SET_POINT:
+                                    ac.coolTempSetPoint = response.value;
+                                    if (ac.listener != null) ac.listener.onDataChanged();
+                                    break;
+                                case PanelControl.AUTO_TEMP_SET_POINT:
+                                    ac.autoTempSetPoint = response.value;
+                                    if (ac.listener != null) ac.listener.onDataChanged();
+                                    break;
+                                case PanelControl.HEAT_TEMP_SET_POINT:
+                                    ac.heatTempSetPoint = response.value;
+                                    if (ac.listener != null) ac.listener.onDataChanged();
+                                    break;
+                                case PanelControl.FAN_SPEED:
+                                    if (ac.fan.indexOf(response.value) >= 0) {
+                                        ac.fanIndex = ac.fan.indexOf(response.value);
+                                        if (ac.listener != null) ac.listener.onDataChanged();
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
@@ -325,17 +404,16 @@ public class RoomActivity extends AppCompatActivity {
             }
         }).start();
 
+        acRotateAnimation = new RotateAnimation(0, 358, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        acRotateAnimation.setDuration(900);
+        acRotateAnimation.setInterpolator(new LinearInterpolator());
+        acRotateAnimation.setRepeatMode(Animation.RESTART);
+        acRotateAnimation.setRepeatCount(Animation.INFINITE);
+
         Log.d("Room Activity", "Caller1");
         showElementsOnScreen();
 
 
-        // Read room status
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        }, 1000);
         readStatus();
 
 
@@ -349,25 +427,48 @@ public class RoomActivity extends AppCompatActivity {
 
     private void readStatus() {
 
-        // Lights
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-        for (OnOffLight onOffLight : lights) {
-            Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
-        }
+                /*while (true)*/
+                {
 
-        // AirConditioners
+                    // Lights
+                    for (OnOffLight onOffLight : lights) {
+                        Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
+                    }
 
-        for (AirConditioner airConditioner : airconds) {
-            Netctl.sendCommand(new ReadAcFanMode().setTarget(airConditioner.subnetId, airConditioner.deviceId));
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                    // AirConditioners
+                    for (AirConditioner airConditioner : airconds) {
+                        Netctl.sendCommand(new ReadAcFanMode().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Netctl.sendCommand(new ReadAcStatus().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Netctl.sendCommand(new ReadAcTempRange().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Netctl.sendCommand(new ReadAcCelsiusFahrenheitFlag().setTarget(airConditioner.subnetId, airConditioner.deviceId));
+                    }
+//                    try {
+//                        Thread.sleep(5000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+                }
             }
-            Netctl.sendCommand(new ReadAcStatus().setTarget(airConditioner.subnetId, airConditioner.deviceId));
-        }
-
-
+        }).start();
     }
 
     private synchronized void updateUi() {
@@ -386,6 +487,17 @@ public class RoomActivity extends AppCompatActivity {
                         ((ImageButton) v).setImageResource(R.drawable.light_on);
                     } else {
                         ((ImageButton) v).setImageResource(R.drawable.light_off);
+                    }
+                } else if (tag instanceof AirConditioner) {
+                    AirConditioner element = (AirConditioner) tag;
+                    if (element.isPowerStateChanged()) {
+                        if (element.isOn()) {
+                            v.startAnimation(acRotateAnimation);
+                            Log.d("Room Activity", "v.startAnimation(acRotateAnimation);");
+                        } else {
+                            v.clearAnimation();
+                        }
+                        element.resetPowerState();
                     }
                 }
 
