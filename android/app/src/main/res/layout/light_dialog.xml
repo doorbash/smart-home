@@ -33,9 +33,11 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/type_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
             android:gravity="right"
             android:orientation="vertical">
 
@@ -49,9 +51,8 @@
                 android:textSize="20sp" />
 
             <RadioGroup
-                android:id="@+id/rg_summarize_group"
+                android:id="@+id/type_radio_group"
                 android:layout_width="match_parent"
-
                 android:layout_height="match_parent">
 
 
@@ -87,6 +88,7 @@
             android:id="@+id/address_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="5dp"
             android:layout_marginRight="16dp"
             android:text="آدرس:"
@@ -131,7 +133,7 @@
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="ChannelNo"
+                android:hint="Channel"
                 android:inputType="numberDecimal"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#DE000000"

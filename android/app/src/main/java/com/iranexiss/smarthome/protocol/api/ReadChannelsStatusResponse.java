@@ -1,5 +1,7 @@
 package com.iranexiss.smarthome.protocol.api;
 
+import android.util.Log;
+
 import com.iranexiss.smarthome.protocol.Command;
 
 /**
@@ -18,8 +20,11 @@ public class ReadChannelsStatusResponse extends Command {
         numChannels = payload[0];
         channelsStatus = new int[numChannels];
 
+        Log.d("ReadChannelsStatusResp",subnetID + " , " + deviceID );
+
         for (int i = 0; i < numChannels; i++) {
             channelsStatus[i] = payload[i + 1];
+            Log.d("ReadChannelsStatusResp","channel[" + i + "] = " + channelsStatus[i]);
         }
 
 

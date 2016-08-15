@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.ColorInt;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -40,6 +41,7 @@ import com.iranexiss.smarthome.model.elements.RGBLight;
 import com.iranexiss.smarthome.model.elements.RGBLight_Table;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.ColorLightingControl;
 import com.iranexiss.smarthome.protocol.api.ForwardlyReportStatus;
 import com.iranexiss.smarthome.protocol.api.PanelControl;
 import com.iranexiss.smarthome.protocol.api.PanelControlResponse;
@@ -60,8 +62,13 @@ import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
 import com.iranexiss.smarthome.ui.dialog.LightDialog;
+import com.iranexiss.smarthome.ui.dialog.RgbLightRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
+import com.pavelsikun.vintagechroma.ChromaDialog;
+import com.pavelsikun.vintagechroma.IndicatorMode;
+import com.pavelsikun.vintagechroma.OnColorSelectedListener;
+import com.pavelsikun.vintagechroma.colormode.ColorMode;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
@@ -182,6 +189,14 @@ public class RoomActivity extends AppCompatActivity {
                     for (OnOffLight light : on_off_light_list) {
                         if (light.subnetID == command.subnetID && light.deviceId == command.deviceID) {
                             light.status = ((ReadChannelsStatusResponse) command).channelsStatus[light.channelId - 1] > 0;
+                        }
+                    }
+
+                    for (RGBLight rgb : rgb_light_list) {
+                        if (rgb.subnetId == command.subnetID && rgb.deviceId == command.deviceID) {
+                            ReadChannelsStatusResponse response = (ReadChannelsStatusResponse) command;
+                            rgb.setColor(response.channelsStatus[0],response.channelsStatus[1],response.channelsStatus[2],response.channelsStatus[3]);
+                            Log.d("Room Activity","rgbw = " + rgb.red + ", " + rgb.green + ", " + rgb.blue + ", " + rgb.white);
                         }
                     }
 
@@ -351,7 +366,10 @@ public class RoomActivity extends AppCompatActivity {
 
                                 element.save();
                             } else if (selectedElement instanceof RGBLight) {
-
+                                RGBLight element = (RGBLight) selectedElement;
+                                element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                                element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                                element.save();
                             }
 
 
@@ -435,12 +453,16 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                /*while (true)*/
+                while (true)
                 {
 
                     // Lights
                     for (OnOffLight onOffLight : on_off_light_list) {
                         Netctl.sendCommand(new ReadChannelsStatus().setTarget(onOffLight.subnetID, onOffLight.deviceId));
+                    }
+
+                    for (RGBLight rgb : rgb_light_list) {
+                        Netctl.sendCommand(new ReadChannelsStatus().setTarget(rgb.subnetId, rgb.deviceId));
                     }
 
                     // AirConditioners
@@ -465,11 +487,11 @@ public class RoomActivity extends AppCompatActivity {
                         }
                         Netctl.sendCommand(new ReadAcCelsiusFahrenheitFlag().setTarget(airConditioner.subnetId, airConditioner.deviceId));
                     }
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();
@@ -505,7 +527,7 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 } else if (tag instanceof RGBLight) {
                     RGBLight element = (RGBLight) tag;
-                    ((ImageButton) v).setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+                    ((ImageButton) v).setColorFilter(element.getColor(), PorterDuff.Mode.SRC_IN);
                 }
 
             }
@@ -800,7 +822,7 @@ public class RoomActivity extends AppCompatActivity {
     class ElementOnClickListener implements View.OnClickListener {
 
         @Override
-        public void onClick(View v) {
+        public void onClick(final View v) {
 
             if (v.getTag() instanceof OnOffLight) {
                 OnOffLight element = (OnOffLight) v.getTag();
@@ -837,6 +859,32 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 });
                 dialog.show(getSupportFragmentManager(), "");
+            } else if (v.getTag() instanceof RGBLight) {
+                final RGBLight element = (RGBLight) v.getTag();
+
+//                RgbLightRemoteDialog dialog = new RgbLightRemoteDialog(RoomActivity.this, (RGBLight) v.getTag(), new RgbLightRemoteDialog.CallBack() {
+//                    @Override
+//                    public void onCanceled() {
+//                        pauseTimer = false;
+//                    }
+//                });
+//                dialog.show();
+
+                new ChromaDialog.Builder()
+                        .initialColor(element.getColor())
+                        .colorMode(ColorMode.ARGB) // RGB, ARGB, HVS, CMYK, CMYK255, HSL
+                        .indicatorMode(IndicatorMode.DECIMAL) //HEX or DECIMAL; Note that (HSV || HSL || CMYK) && IndicatorMode.HEX is a bad idea
+                        .onColorSelected(new OnColorSelectedListener() {
+                            @Override
+                            public void onColorSelected(@ColorInt int color) {
+
+                                element.setColor(color);
+                                Netctl.sendCommand(new ColorLightingControl(element.red, element.green, element.blue, element.white, 1).setTarget(element.subnetId, element.deviceId));
+                                ((ImageButton) v).setColorFilter(element.getColor(), PorterDuff.Mode.SRC_IN);
+                            }
+                        })
+                        .create()
+                        .show(getSupportFragmentManager(), "ChromaDialog");
             }
 
         }
@@ -892,7 +940,7 @@ public class RoomActivity extends AppCompatActivity {
                             pauseTimer = true;
                             timer = TIMER_INIT;
 
-                            if (tag instanceof OnOffLight) {
+                            if (tag instanceof OnOffLight || tag instanceof RGBLight) {
                                 LightDialog dialog = new LightDialog(RoomActivity.this, tag, room, new LightDialog.CallBack() {
                                     @Override
                                     public void onSubmitted(Object output) {
@@ -976,6 +1024,14 @@ public class RoomActivity extends AppCompatActivity {
                             params.topMargin = element.y;
                         } else if (tag instanceof AudioPlayer) {
                             AudioPlayer element = (AudioPlayer) tag;
+                            element.x = (int) (event.getX() - testCircle.getWidth() / 2);
+                            element.y = (int) (event.getY() - testCircle.getHeight() / 2);
+                            element.save();
+                            params.leftMargin = element.x;
+                            params.topMargin = element.y;
+                        }
+                        if (tag instanceof RGBLight) {
+                            RGBLight element = (RGBLight) tag;
                             element.x = (int) (event.getX() - testCircle.getWidth() / 2);
                             element.y = (int) (event.getY() - testCircle.getHeight() / 2);
                             element.save();

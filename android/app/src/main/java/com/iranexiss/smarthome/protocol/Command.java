@@ -412,11 +412,11 @@ public class Command {
         if (ret != null) {
             ret.ip = ipFromByteArray(data);
             ret.startCode = new byte[]{data[14], data[15]};
-            ret.subnetID = data[17];
-            ret.deviceID = data[18];
+            ret.subnetID = data[17] & 0xFF;
+            ret.deviceID = data[18] & 0xFF;
             ret.deviceType = intToDeviceType(MathUtil.toInt(data[19], data[20]));
-            ret.targetSubnetID = data[23];
-            ret.targetDeviceID = data[24];
+            ret.targetSubnetID = data[23] & 0xFF;
+            ret.targetDeviceID = data[24] & 0xFF;
             // TODO: we should check crc here
         }
         return ret;

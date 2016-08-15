@@ -54,4 +54,7 @@ dependencies {
     compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
     // RippleEffect
     compile 'com.github.traex.rippleeffect:library:1.3'
+    // Color Picker
+    //compile 'com.pavelsikun:vintage-chroma:1.5'
+    compile project(':VintageChroma')
 }
