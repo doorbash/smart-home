@@ -1,11 +1,8 @@
 package com.iranexiss.smarthome.ui.dialog;
 
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -17,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ProgressBar;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
@@ -33,11 +31,17 @@ import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class AudioPlayerRemoteDialog extends DialogFragment {
+
+
+    public static final String TAB_SDCARD = "SD Card";
+    public static final String TAB_FTP = "FTP";
+    public static final String TAB_FM = "FM";
+    public static final String TAB_AUDIO_IN = "Audio In";
+
     //_____________________________________________________ Properties  ____________________________
 //    Context context;
     CallBack callback;
@@ -46,6 +50,8 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
     CustomPagerAdapter adapter;
     ViewPager viewPager;
     Iterator<Integer> iterator;
+    boolean timeout = false;
+    boolean dataReadDone = false;
 
     public interface CallBack {
         void onCanceled();
@@ -55,12 +61,33 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         View v;
 
+        ProgressBar loading;
+
         @Nullable
         @Override
         public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             v = inflater.inflate(R.layout.audio_sdcard, null, false);
 
+            loading = (ProgressBar) v.findViewById(R.id.loading);
+
+            loadData();
+
             return v;
+        }
+
+        public void loadData() {
+
+            AudioPlayer.AudioData data = input.data.get(AudioPlayer.SOURCE_SDCARD);
+
+            if (data != null && !data.albums.isEmpty()) {
+                loading.setVisibility(View.GONE);
+            } else {
+                loading.setVisibility(View.VISIBLE);
+            }
+        }
+
+        public void showTryAgain() {
+
         }
     }
 
@@ -110,16 +137,16 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
             super(fm);
             titles = new ArrayList<>();
             if (input.sdcard) {
-                titles.add("SD Card");
+                titles.add(TAB_SDCARD);
             }
             if (input.ftp) {
-                titles.add("FTP");
+                titles.add(TAB_FTP);
             }
             if (input.fm) {
-                titles.add("FM");
+                titles.add(TAB_FM);
             }
             if (input.audio_in) {
-                titles.add("Audio In");
+                titles.add(TAB_AUDIO_IN);
             }
         }
 
@@ -197,17 +224,20 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
-        if (input.sdcard) {
-            input.data.put(AudioPlayer.SOURCE_SDCARD, new AudioPlayer.AudioData());
-        } else if (input.ftp) {
-            input.data.put(AudioPlayer.SOURCE_FTP, new AudioPlayer.AudioData());
-        }
-
-        iterator = input.data.keySet().iterator();
-
         input.listener = new AudioPlayer.OnCommandReceivedListener() {
             @Override
             public void onCommandReceived(Command command) {
+
+
+                if (timeout) return;
+
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+
+
                 if (command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
 
                     Zaudio2ReadQtyOfAlbumBigPackagesResponse response = (Zaudio2ReadQtyOfAlbumBigPackagesResponse) command;
@@ -301,21 +331,76 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         Log.d("AudioPlayerRemoteDialog", "doneReadData()");
 
+        dataReadDone = true;
+
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
 
-                //adapter.titles
-
+                if (adapter.titles.indexOf(TAB_SDCARD) >= 0) {
+                    SDCardFragment sdCardFragment = (SDCardFragment) adapter.frags.get(adapter.titles.indexOf(TAB_SDCARD));
+                    sdCardFragment.loadData();
+                }
             }
         });
 
     }
 
-    private void readData() {
-        if (iterator.hasNext()) {
-            Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+    public void readDataTimeout() {
+        // Continue reading data
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
+
+        Log.d("", "Starting again...");
+
+
+    }
+
+    private void readData() {
+
+        dataReadDone = false;
+
+        if (input.sdcard) {
+            input.data.put(AudioPlayer.SOURCE_SDCARD, new AudioPlayer.AudioData());
+        } else if (input.ftp) {
+            input.data.put(AudioPlayer.SOURCE_FTP, new AudioPlayer.AudioData());
+        }
+
+        iterator = input.data.keySet().iterator();
+
+        timeout = false;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                if (iterator.hasNext()) {
+                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+                }
+
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                if (!dataReadDone && getDialog().isShowing()) {
+
+                    // Timeout!
+
+                    Log.d("AudioPlayerRemoteDialog", "Timeout!");
+
+                    timeout = true;
+
+                    readDataTimeout();
+                }
+            }
+        }).start();
     }
 
 

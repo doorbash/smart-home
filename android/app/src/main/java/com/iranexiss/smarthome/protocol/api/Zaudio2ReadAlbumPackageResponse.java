@@ -38,6 +38,7 @@ public class Zaudio2ReadAlbumPackageResponse extends Command {
             album.num = payload[cnt++];
             try {
                 album.name = new String(payload, cnt + 1, payload[cnt], "UTF-16");
+                Log.d("Zaudio2ReadSongPacka...","> " + album.name);
             } catch (Exception e) {
                 e.printStackTrace();
             }

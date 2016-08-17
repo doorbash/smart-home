@@ -23,7 +23,7 @@ public class Netctl {
     public static final String TAG = "NETCTL";
     private static final int PORT = 6000;
     public static final String DEFAULT_IP = "192.168.1.255";
-    private static final int SOCKET_TIMEOUT = 10000;
+    private static final int SOCKET_TIMEOUT = 30000;
     public static IEventHandler eventHandler;
     private static DatagramSocket serverSocket;
 //    private static boolean stop = false;
@@ -56,6 +56,8 @@ public class Netctl {
                             Command input = Command.input(receivePacket.getData(), receivePacket.getLength());
                             if (input != null)
                                 eventHandler.onCommand(input);
+                        } catch (NullPointerException e) {
+                            break;
                         } catch (Exception e) {
                             e.printStackTrace();
                             Log.e("Netctl", e.getMessage());
@@ -82,11 +84,11 @@ public class Netctl {
                     e.printStackTrace();
                     Log.d(TAG, e.getMessage());
                 }
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
 
             }
         }).start();

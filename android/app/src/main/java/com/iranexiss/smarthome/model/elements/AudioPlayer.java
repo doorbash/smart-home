@@ -42,6 +42,11 @@ public class AudioPlayer extends BaseModel {
     @Column
     public int room;
 
+//    public static class SongPackage {
+//        public int num;
+//
+//    }
+
     public static class Song {
         public int num;
         public String name;
@@ -57,11 +62,16 @@ public class AudioPlayer extends BaseModel {
         }
     }
 
+//    public static class AlbumPackage {
+//        public int num;
+//        public HashMap<Integer, Album> albums = new HashMap<>();
+//    }
+
     public static class Album {
         public int num;
         public int qtySongBigPackages;
         public String name;
-        public HashMap<Integer, Song> songs = new HashMap<>();
+        public HashMap<Integer,Song> songs;
 
         @Override
         public boolean equals(Object obj) {
@@ -76,18 +86,29 @@ public class AudioPlayer extends BaseModel {
         public Album() {
             songs = new HashMap<>();
         }
+
+        public boolean isComplete() {
+            boolean ret = true;
+
+            return ret;
+        }
     }
 
     public static class AudioData {
         public int qtyAlbumPackages;
-        public HashMap<Integer, Album> albums = new HashMap<>();
+        public HashMap<Integer,Album> albums;
 
         public AudioData() {
             albums = new HashMap<>();
         }
+
+        public boolean dataIsComplete() {
+            boolean ret = true;
+            return ret;
+        }
     }
 
-    public HashMap<Integer,AudioData> data = new HashMap<>();
+    public HashMap<Integer, AudioData> data = new HashMap<>();
 
 
     public int getSourceInputCount() {
