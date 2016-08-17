@@ -96,7 +96,7 @@ public class AudioPlayer extends BaseModel {
 
     public static class AudioData {
         public int qtyAlbumPackages;
-        public HashMap<Integer,Album> albums;
+        public HashMap<Integer,Album> albums = new HashMap<>();
 
         public AudioData() {
             albums = new HashMap<>();

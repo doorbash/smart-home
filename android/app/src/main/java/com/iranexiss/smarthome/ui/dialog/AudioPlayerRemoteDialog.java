@@ -2,6 +2,7 @@ package com.iranexiss.smarthome.ui.dialog;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -9,14 +10,22 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.ListViewAutoScrollHelper;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import com.iranexiss.smarthome.R;
+import com.iranexiss.smarthome.RoomActivity;
+import com.iranexiss.smarthome.model.Room;
+import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
 import com.iranexiss.smarthome.protocol.Command;
 import com.iranexiss.smarthome.protocol.Netctl;
@@ -28,11 +37,18 @@ import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackages;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackagesResponse;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackage;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
+import com.iranexiss.smarthome.ui.adapter.AlbumAdapter;
+import com.iranexiss.smarthome.ui.adapter.RoomsAdapter;
+import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
+import com.iranexiss.smarthome.ui.helper.SimpleItemTouchHelperCallback;
+import com.melnykov.fab.FloatingActionButton;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class AudioPlayerRemoteDialog extends DialogFragment {
 
@@ -52,6 +68,8 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
     Iterator<Integer> iterator;
     boolean timeout = false;
     boolean dataReadDone = false;
+    private AlbumAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     public interface CallBack {
         void onCanceled();
@@ -62,6 +80,7 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
         View v;
 
         ProgressBar loading;
+        private RecyclerView mRecyclerView;
 
         @Nullable
         @Override
@@ -69,6 +88,33 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
             v = inflater.inflate(R.layout.audio_sdcard, null, false);
 
             loading = (ProgressBar) v.findViewById(R.id.loading);
+
+
+            mRecyclerView = (RecyclerView) v.findViewById(R.id.album_recycler);
+
+            // use this setting to improve performance if you know that changes
+            // in content do not change the layout size of the RecyclerView
+            mRecyclerView.setHasFixedSize(true);
+
+            // use a linear layout manager
+            mLayoutManager = new LinearLayoutManager(getActivity());
+            mRecyclerView.setLayoutManager(mLayoutManager);
+
+
+            if (mAdapter == null) {
+                mAdapter = new AlbumAdapter(getActivity(), input.data.get(AudioPlayer.SOURCE_SDCARD).albums);
+                mRecyclerView.setAdapter(mAdapter);
+            }
+
+            RecyclerItemClickListener.OnItemClickListener onItemClickListener = new RecyclerItemClickListener.OnItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+                    Log.d("AudioPlayerRemoteDialog", "go to album");
+                }
+            };
+
+            mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), onItemClickListener));
+
 
             loadData();
 
@@ -81,8 +127,13 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
             if (data != null && !data.albums.isEmpty()) {
                 loading.setVisibility(View.GONE);
+
+                if (mAdapter != null) mAdapter.notifyDataSetChanged();
+
+                mRecyclerView.setVisibility(View.VISIBLE);
             } else {
                 loading.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
             }
         }
 
@@ -379,25 +430,30 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
             @Override
             public void run() {
 
-                if (iterator.hasNext()) {
-                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
-                }
-
                 try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
-                if (!dataReadDone && getDialog().isShowing()) {
+                    if (iterator.hasNext()) {
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+                    }
 
-                    // Timeout!
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
-                    Log.d("AudioPlayerRemoteDialog", "Timeout!");
+                    if (!dataReadDone && getDialog().isShowing()) {
 
-                    timeout = true;
+                        // Timeout!
 
-                    readDataTimeout();
+                        Log.d("AudioPlayerRemoteDialog", "Timeout!");
+
+                        timeout = true;
+
+                        readDataTimeout();
+                    }
+                } catch (Exception e) {
+
                 }
             }
         }).start();

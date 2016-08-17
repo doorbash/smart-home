@@ -10,6 +10,14 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true"
+        android:indeterminateDrawable="@drawable/loading_background"  />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/album_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        android:visibility="gone" />
 
 </RelativeLayout>
