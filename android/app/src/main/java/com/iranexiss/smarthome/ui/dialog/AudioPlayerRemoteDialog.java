@@ -1,8 +1,6 @@
 package com.iranexiss.smarthome.ui.dialog;
 
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,23 +8,22 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
-import com.iranexiss.smarthome.model.elements.AudioPlayer_Table;
+import com.iranexiss.smarthome.protocol.Command;
+import com.iranexiss.smarthome.protocol.Netctl;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackage;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackages;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,14 +146,14 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
         }
     }
 
-    public static AudioPlayerRemoteDialog newInstance(int audioPlayerId, AudioPlayerRemoteDialog.CallBack callback) {
+    public static AudioPlayerRemoteDialog newInstance(AudioPlayer ap, AudioPlayerRemoteDialog.CallBack callback) {
         AudioPlayerRemoteDialog f = new AudioPlayerRemoteDialog();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
 
         f.callback = callback;
-        args.putInt("audiplayerid", audioPlayerId);
+        f.input = ap;
 
         f.setArguments(args);
 
@@ -166,9 +163,6 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        int audioPlayerId = getArguments().getInt("audiplayerid");
-        this.input = SQLite.select().from(AudioPlayer.class).where(AudioPlayer_Table.id.is(audioPlayerId)).querySingle();
 
     }
 
@@ -192,8 +186,62 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
+        input.listener = new AudioPlayer.OnCommandReceivedListener() {
+            @Override
+            public void onCommandReceived(Command command) {
+                if (command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
+                    Zaudio2ReadQtyOfAlbumBigPackagesResponse response = (Zaudio2ReadQtyOfAlbumBigPackagesResponse) command;
+
+                    if (response.source == Zaudio2ReadQtyOfAlbumBigPackagesResponse.SOURCE_SDCARD && input.sdcard) {
+                        input.sdcard_data = new AudioPlayer.AudioData(response.number);
+                        Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_SDCARD, 1).setTarget(input.subnetId, input.deviceId));
+                    } else if (response.source == Zaudio2ReadQtyOfAlbumBigPackagesResponse.SOURCE_FTP && input.ftp) {
+                        input.ftp_data = new AudioPlayer.AudioData(response.number);
+                        Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_FTP, 1).setTarget(input.subnetId, input.deviceId));
+                    }
+                } else if (command instanceof Zaudio2ReadAlbumPackageResponse) {
+                    Zaudio2ReadAlbumPackageResponse response = (Zaudio2ReadAlbumPackageResponse) command;
+                    if (response.source == Zaudio2ReadAlbumPackageResponse.SOURCE_SDCARD) {
+
+
+                        if(response.packageNumber < input.sdcard_data.qtyAlbumPackages) {
+                            Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_SDCARD, response.packageNumber + 1).setTarget(input.subnetId, input.deviceId));
+                        } else {
+                            // we are done with album packages. let's process albums
+                            //Netctl.sendCommand(n.setTarget(input.subnetId, input.deviceId));
+                        }
+
+                    } else if (response.source == Zaudio2ReadAlbumPackageResponse.SOURCE_FTP) {
+
+
+                        if(response.packageNumber < input.ftp_data.qtyAlbumPackages) {
+                            Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_FTP, response.packageNumber + 1).setTarget(input.subnetId, input.deviceId));
+                        } else {
+                            // we are done with album packages. let's process albums
+                        }
+
+                    }
+
+                }
+            }
+        };
+
+        readData();
 
         return v;
+    }
+
+    private void readData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (input.sdcard) {
+                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(Zaudio2ReadQtyOfAlbumBigPackages.SDCARD).setTarget(input.subnetId, input.deviceId));
+                } else if (input.ftp) {
+                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(Zaudio2ReadQtyOfAlbumBigPackages.FTP).setTarget(input.subnetId, input.deviceId));
+                }
+            }
+        }).start();
     }
 
 

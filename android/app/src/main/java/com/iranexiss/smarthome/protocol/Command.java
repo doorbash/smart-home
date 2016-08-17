@@ -16,6 +16,8 @@ import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemark;
 import com.iranexiss.smarthome.protocol.api.ReadDeviceRemarkResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
 import com.iranexiss.smarthome.util.MathUtil;
 
 import java.net.InetAddress;
@@ -348,7 +350,14 @@ public class Command {
     public static Command input(byte[] data, int len) {
         Command ret = null;
         byte[] payload = new byte[0];
-        if (data.length > 27) {
+        if(len > 271) {
+            // udp big package (no CRC at the end)
+            payload = new byte[len - 25];
+            for (int i = 0; i < payload.length; i++) {
+                payload[i] = data[25 + i];
+            }
+        }
+        else if (len > 27) {
             payload = new byte[len - 27];
             for (int i = 0; i < payload.length; i++) {
                 payload[i] = data[25 + i];
@@ -406,6 +415,13 @@ public class Command {
             case PanelControlResponse.OPCODE:
                 ret = new PanelControlResponse(payload);
                 break;
+            case Zaudio2ReadQtyOfAlbumBigPackagesResponse.OPCODE:
+                ret = new Zaudio2ReadQtyOfAlbumBigPackagesResponse(payload);
+                break;
+            case Zaudio2ReadAlbumPackageResponse.OPCODE:
+                ret = new Zaudio2ReadAlbumPackageResponse(payload);
+                break;
+
         }
 
 

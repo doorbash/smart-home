@@ -1,7 +1,6 @@
 package com.iranexiss.smarthome;
 
 import android.content.ClipData;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -56,13 +55,14 @@ import com.iranexiss.smarthome.protocol.api.ReadAcTempRangeResponse;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatus;
 import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.DeleteDialog;
 import com.iranexiss.smarthome.ui.dialog.LightDialog;
-import com.iranexiss.smarthome.ui.dialog.RgbLightRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.RoomPopup;
 import com.iranexiss.smarthome.util.Font;
 import com.pavelsikun.vintagechroma.ChromaDialog;
@@ -195,8 +195,8 @@ public class RoomActivity extends AppCompatActivity {
                     for (RGBLight rgb : rgb_light_list) {
                         if (rgb.subnetId == command.subnetID && rgb.deviceId == command.deviceID) {
                             ReadChannelsStatusResponse response = (ReadChannelsStatusResponse) command;
-                            rgb.setColor(response.channelsStatus[0],response.channelsStatus[1],response.channelsStatus[2],response.channelsStatus[3]);
-                            Log.d("Room Activity","rgbw = " + rgb.red + ", " + rgb.green + ", " + rgb.blue + ", " + rgb.white);
+                            rgb.setColor(response.channelsStatus[0], response.channelsStatus[1], response.channelsStatus[2], response.channelsStatus[3]);
+                            Log.d("Room Activity", "rgbw = " + rgb.red + ", " + rgb.green + ", " + rgb.blue + ", " + rgb.white);
                         }
                     }
 
@@ -298,6 +298,14 @@ public class RoomActivity extends AppCompatActivity {
                                         if (ac.listener != null) ac.listener.onDataChanged();
                                     }
                                     break;
+                            }
+                        }
+                    }
+                } else if (command instanceof Zaudio2ReadAlbumPackageResponse || command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
+                    for (AudioPlayer audioPlayer : audio_player_list) {
+                        if (audioPlayer.subnetId == command.subnetID && audioPlayer.deviceId == command.deviceID) {
+                            if (audioPlayer.listener != null) {
+                                audioPlayer.listener.onCommandReceived(command);
                             }
                         }
                     }
@@ -453,7 +461,7 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                while (true)
+                /*while (true)*/
                 {
 
                     // Lights
@@ -487,11 +495,11 @@ public class RoomActivity extends AppCompatActivity {
                         }
                         Netctl.sendCommand(new ReadAcCelsiusFahrenheitFlag().setTarget(airConditioner.subnetId, airConditioner.deviceId));
                     }
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Thread.sleep(5000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
         }).start();
@@ -851,7 +859,7 @@ public class RoomActivity extends AppCompatActivity {
             } else if (v.getTag() instanceof AudioPlayer) {
                 pauseTimer = true;
                 timer = TIMER_INIT;
-                AudioPlayerRemoteDialog dialog = AudioPlayerRemoteDialog.newInstance(((AudioPlayer) v.getTag()).id, new AudioPlayerRemoteDialog.CallBack() {
+                AudioPlayerRemoteDialog dialog = AudioPlayerRemoteDialog.newInstance((AudioPlayer) v.getTag(), new AudioPlayerRemoteDialog.CallBack() {
                     @Override
                     public void onCanceled() {
                         Log.d("Room Activity", "AudioPlayerRemoteDialog.CallBack.onCanceled()");
