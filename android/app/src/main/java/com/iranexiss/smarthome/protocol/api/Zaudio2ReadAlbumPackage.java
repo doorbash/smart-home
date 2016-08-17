@@ -8,9 +8,6 @@ import com.iranexiss.smarthome.protocol.Command;
 public class Zaudio2ReadAlbumPackage extends Command {
     public static final int OPCODE = 0x02E2;
 
-    public static final int SOURCE_SDCARD = 1;
-    public static final int SOURCE_FTP = 2;
-
     public Zaudio2ReadAlbumPackage(int source, int packageNumber) {
         this.operationCode = OPCODE;
 

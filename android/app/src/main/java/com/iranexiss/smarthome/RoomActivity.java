@@ -57,6 +57,8 @@ import com.iranexiss.smarthome.protocol.api.ReadChannelsStatusResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
 import com.iranexiss.smarthome.ui.dialog.AirCondDialog;
 import com.iranexiss.smarthome.ui.dialog.AirCondRemoteDialog;
 import com.iranexiss.smarthome.ui.dialog.AudioPlayerDialog;
@@ -301,7 +303,7 @@ public class RoomActivity extends AppCompatActivity {
                             }
                         }
                     }
-                } else if (command instanceof Zaudio2ReadAlbumPackageResponse || command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
+                } else if (command instanceof Zaudio2ReadAlbumPackageResponse || command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse || command instanceof Zaudio2ReadQtyOfSongBigPackagesResponse || command instanceof Zaudio2ReadSongPackageResponse) {
                     for (AudioPlayer audioPlayer : audio_player_list) {
                         if (audioPlayer.subnetId == command.subnetID && audioPlayer.deviceId == command.deviceID) {
                             if (audioPlayer.listener != null) {

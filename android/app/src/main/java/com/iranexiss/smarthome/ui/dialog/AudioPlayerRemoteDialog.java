@@ -1,8 +1,11 @@
 package com.iranexiss.smarthome.ui.dialog;
 
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Looper;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -23,9 +26,15 @@ import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackage;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackages;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackages;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackage;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class AudioPlayerRemoteDialog extends DialogFragment {
@@ -36,6 +45,7 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
     AudioPlayer input;
     CustomPagerAdapter adapter;
     ViewPager viewPager;
+    Iterator<Integer> iterator;
 
     public interface CallBack {
         void onCanceled();
@@ -49,6 +59,7 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
         @Override
         public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             v = inflater.inflate(R.layout.audio_sdcard, null, false);
+
             return v;
         }
     }
@@ -186,40 +197,95 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
+        if (input.sdcard) {
+            input.data.put(AudioPlayer.SOURCE_SDCARD, new AudioPlayer.AudioData());
+        } else if (input.ftp) {
+            input.data.put(AudioPlayer.SOURCE_FTP, new AudioPlayer.AudioData());
+        }
+
+        iterator = input.data.keySet().iterator();
+
         input.listener = new AudioPlayer.OnCommandReceivedListener() {
             @Override
             public void onCommandReceived(Command command) {
                 if (command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
+
                     Zaudio2ReadQtyOfAlbumBigPackagesResponse response = (Zaudio2ReadQtyOfAlbumBigPackagesResponse) command;
 
-                    if (response.source == Zaudio2ReadQtyOfAlbumBigPackagesResponse.SOURCE_SDCARD && input.sdcard) {
-                        input.sdcard_data = new AudioPlayer.AudioData(response.number);
-                        Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_SDCARD, 1).setTarget(input.subnetId, input.deviceId));
-                    } else if (response.source == Zaudio2ReadQtyOfAlbumBigPackagesResponse.SOURCE_FTP && input.ftp) {
-                        input.ftp_data = new AudioPlayer.AudioData(response.number);
-                        Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_FTP, 1).setTarget(input.subnetId, input.deviceId));
-                    }
+
+                    input.data.get(response.source).qtyAlbumPackages = response.number;
+                    Netctl.sendCommand(new Zaudio2ReadAlbumPackage(response.source, 1).setTarget(input.subnetId, input.deviceId));
+
+
                 } else if (command instanceof Zaudio2ReadAlbumPackageResponse) {
                     Zaudio2ReadAlbumPackageResponse response = (Zaudio2ReadAlbumPackageResponse) command;
-                    if (response.source == Zaudio2ReadAlbumPackageResponse.SOURCE_SDCARD) {
 
 
-                        if(response.packageNumber < input.sdcard_data.qtyAlbumPackages) {
-                            Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_SDCARD, response.packageNumber + 1).setTarget(input.subnetId, input.deviceId));
-                        } else {
-                            // we are done with album packages. let's process albums
-                            //Netctl.sendCommand(n.setTarget(input.subnetId, input.deviceId));
-                        }
+                    // Add current big package to sound data
+                    input.data.get(response.source).albums.putAll(response.albums);
 
-                    } else if (response.source == Zaudio2ReadAlbumPackageResponse.SOURCE_FTP) {
+                    if (response.packageNumber < input.data.get(response.source).qtyAlbumPackages) {
+                        Netctl.sendCommand(new Zaudio2ReadAlbumPackage(response.source, response.packageNumber + 1).setTarget(input.subnetId, input.deviceId));
+                    } else {
+                        // we are done with album packages. let's process albums
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfSongBigPackages(response.source, 0).setTarget(input.subnetId, input.deviceId));
+                    }
+
+                } else if (command instanceof Zaudio2ReadQtyOfSongBigPackagesResponse) {
+
+                    Zaudio2ReadQtyOfSongBigPackagesResponse response = (Zaudio2ReadQtyOfSongBigPackagesResponse) command;
 
 
-                        if(response.packageNumber < input.ftp_data.qtyAlbumPackages) {
-                            Netctl.sendCommand(new Zaudio2ReadAlbumPackage(Zaudio2ReadAlbumPackage.SOURCE_FTP, response.packageNumber + 1).setTarget(input.subnetId, input.deviceId));
-                        } else {
-                            // we are done with album packages. let's process albums
-                        }
+                    input.data.get(response.musicSource).albums.get(response.currentAlbumNo).qtySongBigPackages = response.qtyOfSongBigPackages;
 
+                    if (response.qtyOfSongBigPackages > 0)
+                        Netctl.sendCommand(new Zaudio2ReadSongPackage(response.musicSource, response.currentAlbumNo, 1).setTarget(input.subnetId, input.deviceId));
+                    else if (input.data.get(response.musicSource).albums.get(response.currentAlbumNo) != null) {
+
+
+                        // We are done with this album let's go to another one
+
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfSongBigPackages(response.musicSource, response.currentAlbumNo + 1).setTarget(input.subnetId, input.deviceId));
+
+
+                    } else if (iterator.hasNext()) {
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+                    } else {
+
+
+                        // there is no album to process.. seems we are done;
+
+                        Log.d("AudioPlayerRemoteDialog", "DONE!");
+
+                        doneReadData();
+                    }
+
+                } else if (command instanceof Zaudio2ReadSongPackageResponse) {
+                    Zaudio2ReadSongPackageResponse response = (Zaudio2ReadSongPackageResponse) command;
+
+                    input.data.get(response.musicSource).albums.get(response.currentAlbumNumber).songs.putAll(response.songs);
+
+                    if (response.currentBigPackageNumber < input.data.get(response.musicSource).albums.get(response.currentAlbumNumber).qtySongBigPackages) {
+
+                        // This album still has big packages to get
+
+                        Netctl.sendCommand(new Zaudio2ReadSongPackage(response.musicSource, response.currentAlbumNumber, response.currentBigPackageNumber + 1).setTarget(input.subnetId, input.deviceId));
+                    } else if (input.data.get(response.musicSource).albums.get(response.currentAlbumNumber + 1) != null) {
+
+
+                        // We are done with this album let's go to another one
+
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfSongBigPackages(response.musicSource, response.currentAlbumNumber + 1).setTarget(input.subnetId, input.deviceId));
+
+
+                    } else if (iterator.hasNext()) {
+                        Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+                    } else {
+                        // there is no album to process.. seems we are done;
+
+                        Log.d("AudioPlayerRemoteDialog", "DONE!");
+
+                        doneReadData();
                     }
 
                 }
@@ -231,17 +297,25 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
         return v;
     }
 
-    private void readData() {
-        new Thread(new Runnable() {
+    private void doneReadData() {
+
+        Log.d("AudioPlayerRemoteDialog", "doneReadData()");
+
+        getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (input.sdcard) {
-                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(Zaudio2ReadQtyOfAlbumBigPackages.SDCARD).setTarget(input.subnetId, input.deviceId));
-                } else if (input.ftp) {
-                    Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(Zaudio2ReadQtyOfAlbumBigPackages.FTP).setTarget(input.subnetId, input.deviceId));
-                }
+
+                //adapter.titles
+
             }
-        }).start();
+        });
+
+    }
+
+    private void readData() {
+        if (iterator.hasNext()) {
+            Netctl.sendCommand(new Zaudio2ReadQtyOfAlbumBigPackages(iterator.next()).setTarget(input.subnetId, input.deviceId));
+        }
     }
 
 

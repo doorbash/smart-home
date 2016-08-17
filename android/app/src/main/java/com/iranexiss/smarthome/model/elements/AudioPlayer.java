@@ -8,6 +8,7 @@ import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -15,6 +16,9 @@ import java.util.List;
  */
 @Table(database = AppDatabase.class)
 public class AudioPlayer extends BaseModel {
+
+    public static final int SOURCE_SDCARD = 1;
+    public static final int SOURCE_FTP = 2;
 
     @PrimaryKey(autoincrement = true)
     public int id;
@@ -38,47 +42,52 @@ public class AudioPlayer extends BaseModel {
     @Column
     public int room;
 
-    public static class SongBigPackage {
-        public int number;
-        public int numSongs;
-        public List<Album> songs;
-    }
-
     public static class Song {
         public int num;
         public String name;
-        public List<Song> songs;
-    }
 
-    public static class AlbumBigPackage {
-        public int number;
-        public int numAlbums;
-        public List<Album> albums;
+        @Override
+        public boolean equals(Object obj) {
+            try {
+                return num == ((Song) obj).num;
+            } catch (Exception e) {
+
+            }
+            return false;
+        }
     }
 
     public static class Album {
         public int num;
         public int qtySongBigPackages;
         public String name;
-        public List<SongBigPackage> songBigPackages;
+        public HashMap<Integer, Song> songs = new HashMap<>();
+
+        @Override
+        public boolean equals(Object obj) {
+            try {
+                return num == ((Album) obj).num;
+            } catch (Exception e) {
+
+            }
+            return false;
+        }
 
         public Album() {
-            songBigPackages = new ArrayList<>();
+            songs = new HashMap<>();
         }
     }
 
     public static class AudioData {
         public int qtyAlbumPackages;
-        public List<AlbumBigPackage> albumBigPackages;
+        public HashMap<Integer, Album> albums = new HashMap<>();
 
-        public AudioData(int qtyAlbumPackages) {
-            this.qtyAlbumPackages = qtyAlbumPackages;
-            albumBigPackages = new ArrayList<>();
+        public AudioData() {
+            albums = new HashMap<>();
         }
     }
 
-    public AudioData sdcard_data;
-    public AudioData ftp_data;
+    public HashMap<Integer,AudioData> data = new HashMap<>();
 
 
     public int getSourceInputCount() {

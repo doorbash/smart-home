@@ -48,7 +48,7 @@ public class Netctl {
 
                     while (true) {
 //                        if (stop) return;
-                        byte[] receiveData = new byte[1024];
+                        byte[] receiveData = new byte[2048];
                         try {
                             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                             Log.d(TAG, "Waiting for data...");

@@ -5,13 +5,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/legit"
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="LEGIT"
-        android:textColor="#FFF"
-        android:textSize="24sp" />
+        android:layout_centerInParent="true" />
 
 </RelativeLayout>

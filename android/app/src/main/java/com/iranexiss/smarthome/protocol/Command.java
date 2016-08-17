@@ -18,6 +18,9 @@ import com.iranexiss.smarthome.protocol.api.ReadDeviceRemarkResponse;
 import com.iranexiss.smarthome.protocol.api.SingleChannelControl;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadAlbumPackageResponse;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfAlbumBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackages;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackagesResponse;
+import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
 import com.iranexiss.smarthome.util.MathUtil;
 
 import java.net.InetAddress;
@@ -347,24 +350,39 @@ public class Command {
         return null;
     }
 
+    public static boolean noCRC(int opCode) {
+        switch (opCode) {
+            case Zaudio2ReadSongPackageResponse.OPCODE:
+                return true;
+            case Zaudio2ReadAlbumPackageResponse.OPCODE:
+                return true;
+        }
+        return false;
+    }
+
     public static Command input(byte[] data, int len) {
+
+        if (len < 27) return null;
+
         Command ret = null;
         byte[] payload = new byte[0];
-        if(len > 271) {
-            // udp big package (no CRC at the end)
-            payload = new byte[len - 25];
-            for (int i = 0; i < payload.length; i++) {
-                payload[i] = data[25 + i];
-            }
-        }
-        else if (len > 27) {
-            payload = new byte[len - 27];
-            for (int i = 0; i < payload.length; i++) {
-                payload[i] = data[25 + i];
-            }
-        }
 
         int opCode = MathUtil.toInt(data[21], data[22]);
+
+        if (len > 27) {
+            if (noCRC(opCode)) {
+                // no CRC at the end
+                payload = new byte[len - 25];
+                for (int i = 0; i < payload.length; i++) {
+                    payload[i] = data[25 + i];
+                }
+            } else {
+                payload = new byte[len - 27];
+                for (int i = 0; i < payload.length; i++) {
+                    payload[i] = data[25 + i];
+                }
+            }
+        }
 
         switch (opCode) {
             case ReadDeviceRemark.OPCODE:
@@ -420,6 +438,12 @@ public class Command {
                 break;
             case Zaudio2ReadAlbumPackageResponse.OPCODE:
                 ret = new Zaudio2ReadAlbumPackageResponse(payload);
+                break;
+            case Zaudio2ReadQtyOfSongBigPackagesResponse.OPCODE:
+                ret = new Zaudio2ReadQtyOfSongBigPackagesResponse(payload);
+                break;
+            case Zaudio2ReadSongPackageResponse.OPCODE:
+                ret = new Zaudio2ReadSongPackageResponse(payload);
                 break;
 
         }
