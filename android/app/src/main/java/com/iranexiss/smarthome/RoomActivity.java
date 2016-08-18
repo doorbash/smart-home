@@ -1,5 +1,7 @@
 package com.iranexiss.smarthome;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.ClipData;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -697,6 +699,9 @@ public class RoomActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
+        Log.d("Room Activity","onBackPressed()");
+
         if (toolbarIsUp) {
             toolbarOut(null);
         } else {
@@ -868,7 +873,9 @@ public class RoomActivity extends AppCompatActivity {
                         pauseTimer = false;
                     }
                 });
-                dialog.show(getSupportFragmentManager(), "");
+                dialog.show(getSupportFragmentManager(), "AudioPlayerRemote");
+
+
             } else if (v.getTag() instanceof RGBLight) {
                 final RGBLight element = (RGBLight) v.getTag();
 
@@ -1077,6 +1084,7 @@ public class RoomActivity extends AppCompatActivity {
             super.onProvideShadowMetrics(shadowSize, shadowTouchPoint);
         }
     }
+
 
 
 }

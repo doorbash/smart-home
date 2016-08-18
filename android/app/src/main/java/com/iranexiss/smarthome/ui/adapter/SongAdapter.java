@@ -8,23 +8,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.iranexiss.smarthome.R;
-import com.iranexiss.smarthome.model.Room;
-import com.iranexiss.smarthome.model.Room_Table;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
 import com.iranexiss.smarthome.ui.helper.ItemTouchHelperAdapter;
 import com.iranexiss.smarthome.util.Font;
 import com.iranexiss.smarthome.util.WordsCapitalizer;
-import com.raizlabs.android.dbflow.sql.language.SQLite;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
-public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> implements ItemTouchHelperAdapter {
-    public HashMap<Integer, AudioPlayer.Album> albums;
+public class SongAdapter extends RecyclerView.Adapter<SongAdapter.ViewHolder> implements ItemTouchHelperAdapter {
+    public HashMap<Integer, AudioPlayer.Song> songs;
     private Context context;
 
     @Override
@@ -43,29 +36,27 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public TextView name;
-        public ImageView image;
-        public TextView numSongs;
+        public ImageView playPause;
 
         public ViewHolder(View v) {
             super(v);
             name = (TextView) v.findViewById(R.id.name);
-            image = (ImageView) v.findViewById(R.id.image);
-            numSongs = (TextView) v.findViewById(R.id.num_songs);
+            playPause = (ImageView) v.findViewById(R.id.play_pause);
         }
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public AlbumAdapter(Context context, HashMap<Integer, AudioPlayer.Album> albums) {
-        this.albums = albums;
+    public SongAdapter(Context context, HashMap<Integer, AudioPlayer.Song> songs) {
+        this.songs = songs;
         this.context = context;
     }
 
     // Create new views (invoked by the layout manager)
     @Override
-    public AlbumAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SongAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_album, parent, false);
+                .inflate(R.layout.row_song, parent, false);
         // set the view's size, margins, paddings and layout parameters
 
         ViewHolder vh = new ViewHolder(v);
@@ -77,17 +68,15 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.name.setText(WordsCapitalizer.capitalizeString(albums.get(position).name.substring(0, albums.get(position).name.lastIndexOf('.'))));
-
-        holder.numSongs.setText((albums.get(position).songs == null || albums.get(position).songs.isEmpty()) ? "empty" : (albums.get(position).songs.size() == 1 ? "1 song" : albums.get(position).songs.size() + " songs"));
+        holder.name.setText(songs.get(position + 1).name);
 
 //        holder.name.setTypeface(Font.getInstance(context).iranSansBold);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)1
+    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return albums.size();
+        return songs.size();
     }
 
 

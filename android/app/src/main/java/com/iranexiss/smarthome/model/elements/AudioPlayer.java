@@ -42,6 +42,8 @@ public class AudioPlayer extends BaseModel {
     @Column
     public int room;
 
+    public boolean dataSynced = false;
+
 //    public static class SongPackage {
 //        public int num;
 //
