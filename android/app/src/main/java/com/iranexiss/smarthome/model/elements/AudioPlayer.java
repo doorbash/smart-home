@@ -89,11 +89,6 @@ public class AudioPlayer extends BaseModel {
             songs = new HashMap<>();
         }
 
-        public boolean isComplete() {
-            boolean ret = true;
-
-            return ret;
-        }
     }
 
     public static class AudioData {
@@ -102,11 +97,6 @@ public class AudioPlayer extends BaseModel {
 
         public AudioData() {
             albums = new HashMap<>();
-        }
-
-        public boolean dataIsComplete() {
-            boolean ret = true;
-            return ret;
         }
     }
 

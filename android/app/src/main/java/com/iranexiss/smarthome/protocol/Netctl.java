@@ -118,7 +118,7 @@ public class Netctl {
             @Override
             public void run() {
                 try {
-                    Log.d(TAG, "data >> " + new String(data));
+//                    Log.d(TAG, "data >> " + new String(data));
                     SocketAddress sockaddr = new InetSocketAddress(ip, port);
                     DatagramPacket sendPacket = new DatagramPacket(data, data.length, sockaddr);
                     serverSocket.send(sendPacket);

@@ -9,17 +9,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.iranexiss.smarthome.R;
 import com.iranexiss.smarthome.model.elements.AudioPlayer;
@@ -33,14 +28,14 @@ import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackages;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadQtyOfSongBigPackagesResponse;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackage;
 import com.iranexiss.smarthome.protocol.api.Zaudio2ReadSongPackageResponse;
-import com.iranexiss.smarthome.ui.adapter.AlbumAdapter;
-import com.iranexiss.smarthome.ui.adapter.SongAdapter;
-import com.iranexiss.smarthome.ui.helper.RecyclerItemClickListener;
-import com.iranexiss.smarthome.util.WordsCapitalizer;
+import com.iranexiss.smarthome.ui.fragment.AudioFragmentsInterface;
+import com.iranexiss.smarthome.ui.fragment.AudioInFragment;
+import com.iranexiss.smarthome.ui.fragment.FMFragment;
+import com.iranexiss.smarthome.ui.fragment.FTPFragment;
+import com.iranexiss.smarthome.ui.fragment.SDCardFragment;
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +51,7 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 //    Context context;
     CallBack callback;
     SmartTabLayout viewPagerTab;
-    AudioPlayer input;
+    public AudioPlayer input;
     CustomPagerAdapter adapter;
     ViewPager viewPager;
     Iterator<Integer> iterator;
@@ -67,225 +62,6 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
         void onCanceled();
     }
 
-    class SDCardFragment extends Fragment {
-
-        View v;
-
-        ProgressBar loading;
-        RecyclerView albumRecyclerView;
-        LinearLayout songsLayout;
-        RecyclerView songsRecyclerView;
-        TextView albumTitle;
-        TextView albumNumSongs;
-        TextView tracksText;
-        LinearLayout horizontalLine;
-
-        private AlbumAdapter albumAdapter;
-        private RecyclerView.LayoutManager albumLayoutManager;
-        private SongAdapter songAdapter;
-        private RecyclerView.LayoutManager songLayoutManager;
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            v = inflater.inflate(R.layout.audio_sdcard, null, false);
-
-            loading = (ProgressBar) v.findViewById(R.id.loading);
-            albumRecyclerView = (RecyclerView) v.findViewById(R.id.album_recycler);
-            songsLayout = (LinearLayout) v.findViewById(R.id.songs_layout);
-            songsRecyclerView = (RecyclerView) v.findViewById(R.id.song_recycler);
-            albumTitle = (TextView) v.findViewById(R.id.album_title);
-            albumNumSongs = (TextView) v.findViewById(R.id.album_numsongs);
-            tracksText = (TextView) v.findViewById(R.id.tracks_text);
-            horizontalLine = (LinearLayout) v.findViewById(R.id.horizontal_line);
-
-
-            // use this setting to improve performance if you know that changes
-            // in content do not change the layout size of the RecyclerView
-            albumRecyclerView.setHasFixedSize(true);
-
-            // use a linear layout manager
-            albumLayoutManager = new LinearLayoutManager(getActivity());
-            albumRecyclerView.setLayoutManager(albumLayoutManager);
-
-
-            if (albumAdapter == null) {
-                albumAdapter = new AlbumAdapter(getActivity(), input.data.get(AudioPlayer.SOURCE_SDCARD).albums);
-                albumRecyclerView.setAdapter(albumAdapter);
-            }
-
-            RecyclerItemClickListener.OnItemClickListener onItemClickListener = new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    Log.d("AudioPlayerRemoteDialog", "go to album");
-                    gotoAlbum(albumAdapter.albums.get(position));
-                }
-            };
-
-            albumRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), onItemClickListener));
-
-            // Song
-
-            songsRecyclerView.setHasFixedSize(true);
-
-            // use a linear layout manager
-            songLayoutManager = new LinearLayoutManager(getActivity());
-            songsRecyclerView.setLayoutManager(songLayoutManager);
-
-            if (songAdapter == null) {
-                songAdapter = new SongAdapter(getActivity(), new HashMap<Integer, AudioPlayer.Song>());
-                songsRecyclerView.setAdapter(songAdapter);
-            }
-
-            RecyclerItemClickListener.OnItemClickListener onSongItemClickListener = new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
-                    Log.d("AudioPlayerRemoteDialog", "play song!");
-                    playSong(songAdapter.songs.get(position + 1));
-                }
-            };
-
-            songsRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), onSongItemClickListener));
-
-            loadData();
-
-            return v;
-        }
-
-        private void playSong(AudioPlayer.Song song) {
-            Toast.makeText(getActivity(), "You clicked on song!", Toast.LENGTH_SHORT).show();
-        }
-
-        private void gotoAlbum(AudioPlayer.Album album) {
-            loading.setVisibility(View.GONE);
-            albumRecyclerView.setVisibility(View.GONE);
-            songsLayout.setVisibility(View.VISIBLE);
-            tracksText.setVisibility(View.VISIBLE);
-            horizontalLine.setVisibility(View.VISIBLE);
-            albumTitle.setText(WordsCapitalizer.capitalizeString(album.name.substring(0, album.name.lastIndexOf('.'))));
-            albumNumSongs.setText((album.songs == null || album.songs.size() == 0) ? "Empty" : (album.songs.size() == 1 ? " 1 song" : (album.songs.size() + " songs")));
-            songAdapter.songs = album.songs;
-            songAdapter.notifyDataSetChanged();
-        }
-
-        public void loadData() {
-
-            AudioPlayer.AudioData data = input.data.get(AudioPlayer.SOURCE_SDCARD);
-
-            if (data != null && !data.albums.isEmpty()) {
-                loading.setVisibility(View.GONE);
-                albumRecyclerView.setVisibility(View.VISIBLE);
-                songsLayout.setVisibility(View.GONE);
-                tracksText.setVisibility(View.GONE);
-                horizontalLine.setVisibility(View.GONE);
-
-                if (albumAdapter != null) albumAdapter.notifyDataSetChanged();
-            } else {
-                loading.setVisibility(View.VISIBLE);
-                albumRecyclerView.setVisibility(View.GONE);
-                songsLayout.setVisibility(View.GONE);
-                tracksText.setVisibility(View.GONE);
-                horizontalLine.setVisibility(View.GONE);
-            }
-        }
-
-        public void showTryAgain() {
-
-        }
-    }
-
-    class FTPFragment extends Fragment {
-
-        View v;
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            v = inflater.inflate(R.layout.audio_sdcard, null, false);
-            return v;
-        }
-    }
-
-    class FMFragment extends Fragment {
-
-        View v;
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            v = inflater.inflate(R.layout.audio_sdcard, null, false);
-            return v;
-        }
-    }
-
-    class AudioInFragment extends Fragment {
-
-        View v;
-
-        @Nullable
-        @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            v = inflater.inflate(R.layout.audio_sdcard, null, false);
-            return v;
-        }
-    }
-
-
-    private class CustomPagerAdapter extends FragmentStatePagerAdapter {
-
-        public List<Fragment> frags;
-        public List<String> titles;
-
-        public CustomPagerAdapter(FragmentManager fm) {
-            super(fm);
-            titles = new ArrayList<>();
-            if (input.sdcard) {
-                titles.add(TAB_SDCARD);
-            }
-            if (input.ftp) {
-                titles.add(TAB_FTP);
-            }
-            if (input.fm) {
-                titles.add(TAB_FM);
-            }
-            if (input.audio_in) {
-                titles.add(TAB_AUDIO_IN);
-            }
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-
-            if (frags == null) {
-                frags = new ArrayList<>();
-
-                if (input.sdcard) {
-                    frags.add(new SDCardFragment());
-                }
-                if (input.ftp) {
-                    frags.add(new FTPFragment());
-                }
-                if (input.fm) {
-                    frags.add(new FMFragment());
-                }
-                if (input.audio_in) {
-                    frags.add(new AudioInFragment());
-                }
-            }
-
-            return frags.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return input.getSourceInputCount();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return titles == null ? "" : titles.get(position);
-        }
-    }
 
     public static AudioPlayerRemoteDialog newInstance(AudioPlayer ap, AudioPlayerRemoteDialog.CallBack callback) {
         AudioPlayerRemoteDialog f = new AudioPlayerRemoteDialog();
@@ -315,7 +91,7 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
         viewPager = (ViewPager) v.findViewById(R.id.vp);
 
-        adapter = new CustomPagerAdapter(getChildFragmentManager());
+        adapter = new CustomPagerAdapter(this, getChildFragmentManager());
 
         viewPager.setAdapter(adapter);
 
@@ -333,13 +109,6 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
 
 
                 if (timeout) return;
-
-//                try {
-//                    Thread.sleep(500);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-
 
                 if (command instanceof Zaudio2ReadQtyOfAlbumBigPackagesResponse) {
 
@@ -528,5 +297,93 @@ public class AudioPlayerRemoteDialog extends DialogFragment {
     public void onCancel(DialogInterface dialog) {
         super.onCancel(dialog);
         callback.onCanceled();
+    }
+
+
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
+        getView().setFocusableInTouchMode(true);
+        getView().requestFocus();
+        getView().setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+
+                    // handle back button
+
+                    Log.d("AudioPlayerRemoteDialog", "onBackPressed!");
+
+                    if (!((AudioFragmentsInterface) adapter.frags.get(viewPager.getCurrentItem())).onBackPressed()) {
+                        getDialog().cancel();
+                    }
+
+                    return true;
+
+                }
+
+                return false;
+            }
+        });
+    }
+
+
+    public class CustomPagerAdapter extends FragmentStatePagerAdapter {
+
+        public List<Fragment> frags;
+        public List<String> titles;
+
+        public CustomPagerAdapter(AudioPlayerRemoteDialog audioPlayerRemoteDialog, FragmentManager fm) {
+            super(fm);
+            titles = new ArrayList<>();
+            if (audioPlayerRemoteDialog.input.sdcard) {
+                titles.add(TAB_SDCARD);
+            }
+            if (audioPlayerRemoteDialog.input.ftp) {
+                titles.add(TAB_FTP);
+            }
+            if (audioPlayerRemoteDialog.input.fm) {
+                titles.add(TAB_FM);
+            }
+            if (audioPlayerRemoteDialog.input.audio_in) {
+                titles.add(TAB_AUDIO_IN);
+            }
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+
+            if (frags == null) {
+                frags = new ArrayList<>();
+
+                if (input.sdcard) {
+                    frags.add(new SDCardFragment(input));
+                }
+                if (input.ftp) {
+                    frags.add(new FTPFragment());
+                }
+                if (input.fm) {
+                    frags.add(new FMFragment());
+                }
+                if (input.audio_in) {
+                    frags.add(new AudioInFragment());
+                }
+            }
+
+            return frags.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return input.getSourceInputCount();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return titles == null ? "" : titles.get(position);
+        }
     }
 }
